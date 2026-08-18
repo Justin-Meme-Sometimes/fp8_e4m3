@@ -30,3 +30,7 @@ All three currently pass every vector.
 - `fp_mul` — done, fully verified
 - `bfloat16_add` — done, fully verified
 - TPU systolic array (PE, weight loading, tiling) — in progress
+
+## AI Disclaimer
+
+AI was used in the making of the project, specifically for the testbench generation and debugging.
