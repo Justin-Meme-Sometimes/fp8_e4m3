@@ -143,6 +143,27 @@ def fp8_mul(a_bits: int, b_bits: int) -> int:
     return encode_bf16(decode(a_bits) * decode(b_bits))
 
 
+def decode_bf16(bits: int) -> Fraction:
+    """16-bit bfloat16 encoding -> exact value. Matches decode()'s convention:
+    no subnormals, exp==0 and mant==0 both zero -> exact zero."""
+    bits &= 0xFFFF
+    sign = (bits >> 15) & 1
+    exp = (bits >> BF16_MANT_BITS) & 0xFF
+    mant = bits & ((1 << BF16_MANT_BITS) - 1)
+
+    if exp == 0 and mant == 0:
+        return Fraction(0)
+
+    value = Fraction((1 << BF16_MANT_BITS) + mant, 1 << BF16_MANT_BITS) * (
+        Fraction(2) ** (exp - BF16_BIAS)
+    )
+    return -value if sign else value
+
+
+def bf16_add(a_bits: int, b_bits: int) -> int:
+    return encode_bf16(decode_bf16(a_bits) + decode_bf16(b_bits))
+
+
 if __name__ == "__main__":
     one = 0b0_0111_000
     two = 0b0_1000_000
@@ -159,5 +180,14 @@ if __name__ == "__main__":
     assert fp8_mul(one, one) == bf16_one, f"1.0*1.0 -> {fp8_mul(one, one):#06x}, expected {bf16_one:#06x}"
 
     assert fp8_mul(one, zero) == 0x0000, f"1.0*0 -> {fp8_mul(one, zero):#06x}, expected 0x0000"
+
+    bf16_two = 0b0_10000000_0000000
+    assert bf16_add(bf16_one, bf16_one) == bf16_two, (
+        f"1.0+1.0 (bf16) -> {bf16_add(bf16_one, bf16_one):#06x}, expected {bf16_two:#06x}"
+    )
+    bf16_neg_one = bf16_one | 0x8000
+    assert bf16_add(bf16_one, bf16_neg_one) == 0x0000, (
+        f"1.0-1.0 (bf16) -> {bf16_add(bf16_one, bf16_neg_one):#06x}, expected 0x0000"
+    )
 
     print("golden_model self-check OK")

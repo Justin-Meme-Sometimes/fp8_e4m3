@@ -1,24 +1,24 @@
 //currently adapted from fp_8
 module bfloa16_add(
-    input logic [7:0] a,
-    input logic [7:0] b,
+    input logic [15:0] a,
+    input logic [15:0] b,
     output logic [15:0] result
 );
 
 // // Extract fields (combinational temps)
 logic sign_a, sign_b, sign_r;
-logic [3:0]  exp_a, exp_b;
-logic [2:0] mant_a, mant_b;
-logic [6:0] aligned_a, aligned_b;
-logic [7:0] sum;
-logic [3:0]  exp_diff;
+logic [7:0]  exp_a, exp_b;
+logic [6:0] mant_a, mant_b;
+logic [10:0] aligned_a, aligned_b;
+logic [11:0] sum;
+logic [7:0]  exp_diff;
 logic [2:0]  mant_norm;
 logic        guard, round, sticky;
 logic [3:0]  exp_norm;
-logic [4:0]  exp_r_edited, exp_r;
-logic [3:0]  rounded_frac;
+logic [8:0]  exp_r_edited, exp_r;
+logic [7:0]  rounded_frac;
 logic        round_bit;
-logic [2:0]  rounded_frac_edited;
+logic [6:0]  rounded_frac_edited;
 logic is_zero_a, is_zero_b;
 logic mantissa_LSB, round_up, align_sticky, align_sticky_a, align_sticky_b;
 
@@ -117,35 +117,52 @@ always_comb begin
         end
     end
 
-    if(sum[15] == 1) begin
-        sum = sum >> 1 | {15'b0, sum[0]};
+    if(sum[11] == 1) begin
+        sum = sum >> 1 | {11'b0, sum[0]};
         exp_r = exp_r + 1;
-    end else if(sum[14] == 1) begin
+    end else if(sum[10] == 1) begin
 
     end else begin
-        casez(sum[5:0])
-            6'b1?????: begin
-                if(exp_r < 1) sum = 8'h0;
+        casez(sum[9:0])
+            10'b1?????????: begin
+                if(exp_r < 1) sum = 12'h0;
                 else begin sum = sum << 1; exp_r = exp_r - 1; end
             end
-            6'b01????: begin 
-                if(exp_r < 2) sum = 8'h0;
+            10'b01????????: begin
+                if(exp_r < 2) sum = 12'h0;
                 else begin sum = sum << 2; exp_r = exp_r - 2; end
             end
-            6'b001???: begin 
-                if(exp_r < 3) sum = 8'h0;
+            10'b001???????: begin
+                if(exp_r < 3) sum = 12'h0;
                 else begin sum = sum << 3; exp_r = exp_r - 3; end
             end
-            6'b0001??: begin 
-                if(exp_r < 4) sum = 8'h0;
+            10'b0001??????: begin
+                if(exp_r < 4) sum = 12'h0;
                 else begin sum = sum << 4; exp_r = exp_r - 4; end
             end
-            6'b00001?: begin 
-                if(exp_r < 5) sum = 8'h0;
+            10'b00001?????: begin
+                if(exp_r < 5) sum = 12'h0;
                 else begin sum = sum << 5; exp_r = exp_r - 5; end
-            end 6'b000001: begin 
-                if(exp_r < 6) sum = 8'h0;
+            end
+            10'b000001????: begin
+                if(exp_r < 6) sum = 12'h0;
                 else begin sum = sum << 6; exp_r = exp_r - 6; end
+            end
+            10'b0000001???: begin
+                if(exp_r < 7) sum = 12'h0;
+                else begin sum = sum << 7; exp_r = exp_r - 7; end
+            end
+            10'b00000001??: begin
+                if(exp_r < 8) sum = 12'h0;
+                else begin sum = sum << 8; exp_r = exp_r - 8; end
+            end
+            10'b000000001?: begin
+                if(exp_r < 9) sum = 12'h0;
+                else begin sum = sum << 9; exp_r = exp_r - 9; end
+            end
+            10'b0000000001: begin
+                if(exp_r < 10) sum = 12'h0;
+                else begin sum = sum << 10; exp_r = exp_r - 10; end
             end
         endcase
     end
@@ -157,17 +174,17 @@ always_comb begin
 
     round_up = guard & (round | sticky | mantissa_LSB);
 
-    rounded_frac = {1'b0, sum[5:3]} + round_up; 
+    rounded_frac = {1'b0, sum[9:3]} + round_up; 
 
-    rounded_frac_edited = rounded_frac[2:0];
-    if (rounded_frac[3]) begin
+    rounded_frac_edited = rounded_frac[6:0];
+    if (rounded_frac[7]) begin
         exp_r_edited = exp_r + 1;
     end else begin
         exp_r_edited = exp_r;
     end
 
 
-    else if(is_zero_a && is_zero_b) begin
+    if(is_zero_a && is_zero_b) begin
         result = 8'h00;
     end else if(is_zero_a) begin
         result = b;
@@ -175,10 +192,10 @@ always_comb begin
         result = a;
     end else if(sum == 0) begin
         result = 8'h00;
-    end  else if(exp_r_edited[4] == 1) begin
-        result = {sign_r, 4'hF, 3'h7};
+    end  else if(exp_r_edited[8] == 1) begin
+        result = {sign_r, 8'hFF, 7'h7F};
     end else begin
-        result = {sign_r, exp_r_edited[3:0], rounded_frac_edited};
+        result = {sign_r, exp_r_edited[7:0], rounded_frac_edited};
     end
     
 end
