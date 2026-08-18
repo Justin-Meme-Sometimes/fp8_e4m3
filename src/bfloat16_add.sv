@@ -1,15 +1,9 @@
-`timescale 1ns / 1ps
-
-//No subnormal trash, and we round to zero for that
-//if our sum is zero we default to zero
-//we round to the nearest even
-//it's 4 exponents 3 mantissa.
-module fp_8_add (
-input  logic [7:0] a,
-input  logic [7:0] b,
-output logic [7:0] result
+//currently adapted from fp_8
+module bfloa16_add(
+    input logic [7:0] a,
+    input logic [7:0] b,
+    output logic [15:0] result
 );
-
 
 // // Extract fields (combinational temps)
 logic sign_a, sign_b, sign_r;
@@ -29,20 +23,20 @@ logic is_zero_a, is_zero_b;
 logic mantissa_LSB, round_up, align_sticky, align_sticky_a, align_sticky_b;
 
 
-assign sign_a = a[7];
-assign sign_b = b[7];
+assign sign_a = a[15];
+assign sign_b = b[15];
 
-assign exp_a = a[6:3];
-assign exp_b = b[6:3];
+assign exp_a = a[14:7];
+assign exp_b = b[14:7];
 
-assign mant_a = a[2:0];
-assign mant_b = b[2:0];
+assign mant_a = a[6:0];
+assign mant_b = b[6:0];
 
 
 always_comb begin
 
-    is_zero_a = (a[6:0] == 7'b0);
-    is_zero_b = (b[6:0] == 7'b0);
+    is_zero_a = (a[14:0] == 15'b0);
+    is_zero_b = (b[14:0] == 15'b0);
 
     if (exp_a > exp_b) begin
         exp_diff  = exp_a - exp_b;
@@ -55,12 +49,22 @@ always_comb begin
             4: align_sticky_a = |({1'b1,mant_b,3'b000}[3:0]);
             5: align_sticky_a = |({1'b1,mant_b,3'b000}[4:0]);
             6: align_sticky_a = |({1'b1,mant_b,3'b000}[5:0]);
+            7: align_sticky_a = |({1'b1,mant_b,3'b000}[6:0]);
+            8: align_sticky_a = |({1'b1,mant_b,3'b000}[7:0]);
+            9: align_sticky_a = |({1'b1,mant_b,3'b000}[8:0]);
+            10: align_sticky_a = |({1'b1,mant_b,3'b000}[9:0]);
+            11: align_sticky_a = |({1'b1,mant_b,3'b000}[10:0]);
+            12: align_sticky_a = |({1'b1,mant_b,3'b000}[11:0]);
+            13: align_sticky_a = |({1'b1,mant_b,3'b000}[12:0]);
+            14: align_sticky_a = |({1'b1,mant_b,3'b000}[13:0]);
+            15: align_sticky_a = |({1'b1,mant_b,3'b000}[14:0]);
+            16: align_sticky_a = |({1'b1,mant_b,3'b000}[15:0]);
             default: align_sticky_a = 1;
         endcase 
         align_sticky = align_sticky_a;
         if (exp_diff == 0) begin
             aligned_b = {1'b1, mant_b, 3'b000};
-        end else if (exp_diff < 7) begin
+        end else if (exp_diff < 15) begin
             aligned_b = ({1'b1, mant_b, 3'b000} >> exp_diff);
         end else begin
             aligned_b = 4'b0;  
@@ -76,11 +80,21 @@ always_comb begin
             4: align_sticky_b = |({1'b1,mant_a,3'b000}[3:0]);
             5: align_sticky_b = |({1'b1,mant_a,3'b000}[4:0]);
             6: align_sticky_b = |({1'b1,mant_a,3'b000}[5:0]);
+            7: align_sticky_b = |({1'b1,mant_a,3'b000}[6:0]);
+            8: align_sticky_b = |({1'b1,mant_a,3'b000}[7:0]);
+            9: align_sticky_b = |({1'b1,mant_a,3'b000}[8:0]);
+            10: align_sticky_b = |({1'b1,mant_a,3'b000}[9:0]);
+            11: align_sticky_b = |({1'b1,mant_a,3'b000}[10:0]);
+            12: align_sticky_b = |({1'b1,mant_a,3'b000}[11:0]);
+            13: align_sticky_b = |({1'b1,mant_a,3'b000}[12:0]);
+            14: align_sticky_b = |({1'b1,mant_a,3'b000}[13:0]);
+            15: align_sticky_b = |({1'b1,mant_a,3'b000}[14:0]);
+            16: align_sticky_b = |({1'b1,mant_a,3'b000}[15:0]);
             default: align_sticky_b = 1;
         endcase 
         align_sticky = align_sticky_b;
         aligned_b = {1'b1, mant_b, 3'b000};
-        if (exp_diff < 7) begin
+        if (exp_diff < 15) begin
             aligned_a = ({1'b1, mant_a, 3'b000} >> exp_diff);
         end else begin
             aligned_a = 4'b0;
@@ -103,10 +117,10 @@ always_comb begin
         end
     end
 
-    if(sum[7] == 1) begin
-        sum = sum >> 1 | {7'b0, sum[0]};
+    if(sum[15] == 1) begin
+        sum = sum >> 1 | {15'b0, sum[0]};
         exp_r = exp_r + 1;
-    end else if(sum[6] == 1) begin
+    end else if(sum[14] == 1) begin
 
     end else begin
         casez(sum[5:0])
@@ -169,5 +183,6 @@ always_comb begin
     
 end
 endmodule
+
 
 
