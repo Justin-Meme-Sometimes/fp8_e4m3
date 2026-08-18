@@ -33,4 +33,4 @@ All three currently pass every vector.
 
 ## AI Disclaimer
 
-AI was used in the making of the project, specifically for the testbench generation and debugging.
+AI was used in the making of the project, specifically for the testbench generation and debugging. The Architecture for the design and the designs are human made.
