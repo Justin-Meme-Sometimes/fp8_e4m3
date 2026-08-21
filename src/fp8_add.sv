@@ -26,6 +26,7 @@ logic [3:0]  rounded_frac;
 logic        round_bit;
 logic [2:0]  rounded_frac_edited;
 logic is_zero_a, is_zero_b;
+logic [6:0] mant_a_ext, mant_b_ext;
 logic mantissa_LSB, round_up, align_sticky, align_sticky_a, align_sticky_b;
 
 
@@ -43,20 +44,24 @@ always_comb begin
 
     is_zero_a = (a[6:0] == 7'b0);
     is_zero_b = (b[6:0] == 7'b0);
+    mant_a_ext = {1'b1, mant_a, 3'b000};
+    mant_b_ext = {1'b1, mant_b, 3'b000};
+    align_sticky_a = 0;
+    align_sticky_b = 0;
 
     if (exp_a > exp_b) begin
         exp_diff  = exp_a - exp_b;
         aligned_a = {1'b1, mant_a, 3'b000};
         case (exp_diff)
             0: align_sticky_a = 0;
-            1: align_sticky_a = |({1'b1,mant_b,3'b000}[0:0]);
-            2: align_sticky_a = |({1'b1,mant_b,3'b000}[1:0]);
-            3: align_sticky_a = |({1'b1,mant_b,3'b000}[2:0]);
-            4: align_sticky_a = |({1'b1,mant_b,3'b000}[3:0]);
-            5: align_sticky_a = |({1'b1,mant_b,3'b000}[4:0]);
-            6: align_sticky_a = |({1'b1,mant_b,3'b000}[5:0]);
+            1: align_sticky_a = |(mant_b_ext[0:0]);
+            2: align_sticky_a = |(mant_b_ext[1:0]);
+            3: align_sticky_a = |(mant_b_ext[2:0]);
+            4: align_sticky_a = |(mant_b_ext[3:0]);
+            5: align_sticky_a = |(mant_b_ext[4:0]);
+            6: align_sticky_a = |(mant_b_ext[5:0]);
             default: align_sticky_a = 1;
-        endcase 
+        endcase
         align_sticky = align_sticky_a;
         if (exp_diff == 0) begin
             aligned_b = {1'b1, mant_b, 3'b000};
@@ -70,14 +75,14 @@ always_comb begin
         exp_diff  = exp_b - exp_a;
         case (exp_diff)
             0: align_sticky_b = 0;
-            1: align_sticky_b = |({1'b1,mant_a,3'b000}[0:0]);
-            2: align_sticky_b = |({1'b1,mant_a,3'b000}[1:0]);
-            3: align_sticky_b = |({1'b1,mant_a,3'b000}[2:0]);
-            4: align_sticky_b = |({1'b1,mant_a,3'b000}[3:0]);
-            5: align_sticky_b = |({1'b1,mant_a,3'b000}[4:0]);
-            6: align_sticky_b = |({1'b1,mant_a,3'b000}[5:0]);
+            1: align_sticky_b = |(mant_a_ext[0:0]);
+            2: align_sticky_b = |(mant_a_ext[1:0]);
+            3: align_sticky_b = |(mant_a_ext[2:0]);
+            4: align_sticky_b = |(mant_a_ext[3:0]);
+            5: align_sticky_b = |(mant_a_ext[4:0]);
+            6: align_sticky_b = |(mant_a_ext[5:0]);
             default: align_sticky_b = 1;
-        endcase 
+        endcase
         align_sticky = align_sticky_b;
         aligned_b = {1'b1, mant_b, 3'b000};
         if (exp_diff < 7) begin
@@ -152,8 +157,7 @@ always_comb begin
         exp_r_edited = exp_r;
     end
 
-
-    else if(is_zero_a && is_zero_b) begin
+    if(is_zero_a && is_zero_b) begin
         result = 8'h00;
     end else if(is_zero_a) begin
         result = b;

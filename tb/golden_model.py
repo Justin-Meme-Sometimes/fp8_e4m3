@@ -164,6 +164,60 @@ def bf16_add(a_bits: int, b_bits: int) -> int:
     return encode_bf16(decode_bf16(a_bits) + decode_bf16(b_bits))
 
 
+def bf16_to_fp8_requant(bits: int) -> int:
+    """16-bit bfloat16 -> 8-bit FP8 E4M3, matching the design decisions in
+    bfloat16_to_fp8_requant.sv:
+      - no subnormals: any input with biased exponent < 121 flushes to +0.0.
+        This is a hard cutoff on the *input* exponent, not rounding-aware -
+        a value that would round up into the smallest normal is still
+        flushed, by design.
+      - round-to-nearest-even when truncating the 7-bit bf16 mantissa to 3 bits
+      - overflow (whether from a genuinely huge input, or from mantissa
+        rounding carrying the encoded exponent past 15) saturates to the
+        largest finite E4M3 value (448), sign preserved - this never emits
+        the exponent=1111/mantissa=111 bit pattern, which is reserved for NaN
+
+    NOTE: the current RTL's overflow check only tests bit 4 of the rebiased
+    exponent (`exp_r_edited[4]`), which is only equivalent to "exp_r_edited
+    >= 16" while exp_r_edited < 32. Since bf16's exponent field is 8 bits
+    wide (vs. FP8 x FP8 addition, where the rebiased exponent can never
+    exceed ~17), a large bf16 input can push exp_r_edited well past 32,
+    where that single-bit check silently stops catching overflow. This
+    golden model implements the actually-intended "any exp_r_edited >= 16"
+    saturation, so expect real mismatches against the current RTL on
+    large-exponent vectors until that check is widened.
+    """
+    bits &= 0xFFFF
+    sign = (bits >> 15) & 1
+    exp_a = (bits >> 7) & 0xFF
+    mant_a = bits & 0x7F
+
+    if exp_a < 121:
+        return 0x00
+
+    exp_r = exp_a - 120
+
+    mantissa_lsb = (mant_a >> 4) & 1
+    guard = (mant_a >> 3) & 1
+    round_bit = (mant_a >> 2) & 1
+    sticky = 1 if (mant_a & 0b11) else 0
+
+    round_up = guard and (round_bit or sticky or mantissa_lsb)
+
+    top3 = (mant_a >> 4) & 0x7
+    rounded = top3 + (1 if round_up else 0)
+
+    if rounded & 0x8:  # carry out of the 3-bit mantissa
+        rounded &= 0x7
+        exp_r += 1
+
+    if exp_r >= 16 or (exp_r == 15 and rounded == 7):
+        exp_r = 15
+        rounded = 6  # saturate to max finite (448), never the NaN pattern
+
+    return (sign << 7) | (exp_r << 3) | rounded
+
+
 if __name__ == "__main__":
     one = 0b0_0111_000
     two = 0b0_1000_000
@@ -188,6 +242,37 @@ if __name__ == "__main__":
     bf16_neg_one = bf16_one | 0x8000
     assert bf16_add(bf16_one, bf16_neg_one) == 0x0000, (
         f"1.0-1.0 (bf16) -> {bf16_add(bf16_one, bf16_neg_one):#06x}, expected 0x0000"
+    )
+
+    assert bf16_to_fp8_requant(bf16_one) == one, (
+        f"requant(1.0) -> {bf16_to_fp8_requant(bf16_one):#04x}, expected {one:#04x}"
+    )
+    assert bf16_to_fp8_requant(0x0000) == 0x00, "requant(+0.0) should be 0x00"
+    assert bf16_to_fp8_requant(0x8000) == 0x00, "requant(-0.0) should be 0x00 (no negative zero)"
+
+    # exp_a=120, max mantissa: true value rounds up to exactly the smallest
+    # normal (2^-6), but the hard cutoff flushes it to zero anyway - this
+    # locks in that deliberate design choice.
+    just_below_cutoff = (120 << 7) | 0x7F
+    assert bf16_to_fp8_requant(just_below_cutoff) == 0x00, (
+        "requant should hard-flush exp_a=120 to zero even though it would round up"
+    )
+
+    # exp_a=135, mantissa rounds 110->111 with no carry: should saturate to
+    # 448 (0xFE), not emit the reserved NaN pattern (0xFF).
+    nan_boundary = (135 << 7) | 0b1101001
+    assert bf16_to_fp8_requant(nan_boundary) == 0x7E, (
+        f"requant NaN-boundary case -> {bf16_to_fp8_requant(nan_boundary):#04x}, expected 0x7e"
+    )
+
+    # exp_a=152 (~2^25, a large but perfectly ordinary finite bf16 value):
+    # correct behavior is saturate to 448. This is the case the current
+    # RTL's exp_r_edited[4] check gets wrong (see bf16_to_fp8_requant's
+    # docstring) - it's here as a locked-in golden answer, not a claim
+    # about what the RTL currently produces.
+    large_finite = (152 << 7) | 0x00
+    assert bf16_to_fp8_requant(large_finite) == 0x7E, (
+        f"requant(~2^25) -> {bf16_to_fp8_requant(large_finite):#04x}, expected 0x7e (saturate)"
     )
 
     print("golden_model self-check OK")
