@@ -27,12 +27,11 @@ always_comb begin
 
     is_zero_a = (a[6:0] == 7'b0);
     is_zero_b = (b[6:0] == 7'b0);
-
-    // === Handle signs (assumes same sign only, no subtraction) ===
+    
     sign_r = sign_a ^ sign_b;
 
     exp_r = (exp_a + exp_b + 113); // ((exp_a - 7) + (exp_b -7) + 113)
-    // === Add aligned mantissas ===
+  
     product = {1'b1, mant_a} * {1'b1, mant_b};
 
     if (product[7] == 1) begin
