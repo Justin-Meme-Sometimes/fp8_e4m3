@@ -48,6 +48,41 @@ module fp8_div (
         sum_0 = ins_s3[2] + ins_s3[3];
         pre_log_sum = sum_0 + sum_1;
     end
+
+
+    function automatic logic [9:0] log2_lut(
+        input logic [3:0] addr,
+    );
+        case (addr)
+            4'd0: return 10'h000;  // f=1.000  log2=0.000000
+            4'd1: return 10'h0AE;  // f=1.125  log2=0.169925
+            4'd2: return 10'h14A;  // f=1.250  log2=0.321928
+            4'd3: return 10'h1D6;  // f=1.375  log2=0.459432
+            4'd4: return 10'h257;  // f=1.500  log2=0.584963
+            4'd5: return 10'h2CD;  // f=1.625  log2=0.700440
+            4'd6: return 10'h33B;  // f=1.750  log2=0.807355
+            4'd7: return 10'h3A1;  // f=1.875  log2=0.906891
+            4'd8: return 10'h400;  // f=2.000  log2=1.000000
+        endcase
+    endfunction
+
+
+    always_comb begin
+        one_pos = 0;
+        for(int i = 0; i < MAX_WIDTH; i++) begin
+            if(sum[i]) begin
+            one_pos;
+        end
+    end
+
+
+    assign idx = f_frac[6:4];   // top 3 bits -> which edge pair
+    assign w   = f_frac[3:0];
+
+    assign result = log2_lut[idx] + ((w*log2_lut[idx+1] - log2_lut[idx]) >> W_BITS);
+
+    
+    
     
 
 endmodule
