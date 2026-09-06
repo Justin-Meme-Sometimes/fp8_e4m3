@@ -89,7 +89,7 @@ module fp8_div (
     always_comb begin
         one_pos = 0;
         f = 0;
-        for(int i = 0; i < MAX_WIDTH; i++) begin
+        for(int i = 0; i < MAX_WIDTH; i++) begin 
             if(sum[i]) begin
                 one_pos = i; //priority encoder for the MSB on
         end
@@ -103,9 +103,16 @@ module fp8_div (
 
     assign result = log2_lut[idx] + ((w*log2_lut[idx+1] - log2_lut[idx]) >> W_BITS);
     assign log_result = f_frac + one_pos;
+    assign log_and_max = log_result + max;
+    
 
-    
-    
-    
+    always_ff @(posedge clk, negedge rst_n) begin
+        if(!rst_n) begin
+            for (int i = 0; i < 4; i++) softmax_out[i] <= 0;
+        end else begin
+            for (int i = 0; i < 4; i++) softmax_out[i] <= ins_s5[i] - log_and_max;
+        end
+    end
+    //ADD MORE
 
 endmodule
