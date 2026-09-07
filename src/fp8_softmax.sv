@@ -4,6 +4,7 @@ module fp8_div (
     input logic rst_n,
     input logic signed [3:0][15:0] ins,
     input logic signed [15:0] con,
+    input logic compute_state,
     input logic clr,
     input logic valid,
     output logic signed[3:0][15:0] out,
@@ -46,6 +47,43 @@ module fp8_div (
             4'd8: return 10'h800;  // f=2.000  log2=1.000000
         endcase
     endfunction
+
+//     module soft_counter 
+// (input logic clk,
+//  input logic rst_n,
+//  input logic en,
+//  input logic clr,
+//  output logic [3:0] out);
+
+    logic [3:0] softmax_cnt;
+    logic softmax_inc, softmax_full;
+    soft_counter count (.clk(clk), .rst_n(rst_n), .en(softmax_inc), .clr(softmax_clr), .out(softmax_cnt));
+
+    // module softmax_fsm(
+    // input logic clk,
+    // input logic rst_n,
+    // input logic start,   
+    // input logic compute_state,
+    // input logic done_computing,
+    // output logic first,
+    // output logic softmax_computing,
+    // output logic clr);
+
+
+    logic done_computing, fsm_start, first, softmax_computing, softmax_clr;
+    //fsm starts once the softmax row is not full and we are in the compute_state with a valid input
+    assign fsm_start = compute_state && valid;
+    assign softmax_full = softmax_cnt == 4'd15;
+    assign done_computing = softmax_cnt == softmax_cnt_full
+
+    softmax_fsm fsm(.clk(clk), 
+                    .rst_n(rst_n), 
+                    .start(fsm_start), 
+                    .compute_state(compute_state), 
+                    .done_computing(done_computing), 
+                    .first(first), 
+                    .softmax_computing(softmax_computing), 
+                    .clr(softmax_clr));
 
     always_ff @(posedge clk, negedge rst_n) begin
         if(!rst_n) begin
@@ -111,8 +149,89 @@ module fp8_div (
             for (int i = 0; i < 4; i++) softmax_out[i] <= 0;
         end else begin
             for (int i = 0; i < 4; i++) softmax_out[i] <= ins_s5[i] - log_and_max;
+            if(valid) begin
+                softmax_inc <= 1;
+            end else begin
+                softmax_inc <= 0;
+            end //we will pipeline valid all the through
         end
     end
     //ADD MORE
+
+endmodule
+
+module softmax_fsm(
+    input logic clk,
+    input logic rst_n,
+    input logic start,   
+    input logic compute_state,
+    input logic done_computing,
+    output logic first,
+    output logic softmax_computing,
+    output logic clr);
+
+    typedef enum logic [5:0] {IDLE, FIRST, COMPUTE, DONE} state_t;
+    state_t current_state, next_state;
+
+    always_ff @(posedge clk, negedge rst_n) begin
+        if(!rst_n) begin
+            current_state <= IDLE;
+        end else begin
+            current_state <=  next_state;
+        end
+    end
+    
+    always_comb begin
+        next_state = current_state;
+        first = 0;
+        softmax_computing = 0;
+        clr = 0;
+        case(current_state)
+            IDLE: begin
+                if(start) begin
+                    next_state = FIRST;
+                end else begin
+                    next_state = COMPUTE;               
+                end
+            end
+            FIRST : begin
+                first = 1;
+                softmax_computing = 1;
+                next_state = COMPUTE;
+            end
+            COMPUTE : begin
+                if(done_computing) begin
+                    next_state = COMPUTE;
+                    softmax_computing = 1;
+                end else begin
+                    next_state = DONE;
+                end
+            end
+            DONE: begin
+                clr = 1;
+                next_state = IDLE;
+            end
+        endcase
+    end
+endmodule
+
+module soft_counter 
+(input logic clk,
+ input logic rst_n,
+ input logic en,
+ input logic clr,
+ output logic [3:0] out);
+
+ always_ff @(posedge clk, negedge rst_n) begin
+    if(!rst_n)begin
+        out <= '0;
+    end else begin
+        if(clr)begin
+            out <= '0;
+        end else if (en) begin
+            out <= out + 8'd4;
+        end
+    end
+ end
 
 endmodule
