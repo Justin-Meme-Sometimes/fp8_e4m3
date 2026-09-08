@@ -74,7 +74,9 @@ module fp8_div (
     //fsm starts once the softmax row is not full and we are in the compute_state with a valid input
     assign fsm_start = compute_state && valid;
     assign softmax_full = softmax_cnt == 4'd15;
-    assign done_computing = softmax_cnt == softmax_cnt_full
+    assign done_computing = softmax_cnt == softmax_cnt_full;
+
+    //no we need to add it so it updates in real time.
 
     softmax_fsm fsm(.clk(clk), 
                     .rst_n(rst_n), 
@@ -215,12 +217,13 @@ module softmax_fsm(
     end
 endmodule
 
+
 module soft_counter 
 (input logic clk,
  input logic rst_n,
  input logic en,
  input logic clr,
- output logic [3:0] out);
+ output logic [4:0] out);
 
  always_ff @(posedge clk, negedge rst_n) begin
     if(!rst_n)begin
