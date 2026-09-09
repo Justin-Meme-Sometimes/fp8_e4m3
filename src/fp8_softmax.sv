@@ -236,5 +236,5 @@ module soft_counter
         end
     end
  end
-
+//
 endmodule
