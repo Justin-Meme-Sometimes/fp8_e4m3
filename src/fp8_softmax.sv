@@ -94,15 +94,50 @@ module fp8_div (
             for(int i = 0; i < 4;i++) begin
                 ins_s2[i] <= 0;
             end
+            valid_s2 <= 0;
         end else begin
             for(int i = 0; i < 4; i++) begin
-                if(max > ins[i]) begin
-                    max <= ins[i];
+                if(first) begin
+                    if(max > ins[i]) begin
+                        max <= ins[i];
+                    end
+                end else begin
+                    if(new_max > ins[i]) begin
+                        new_max <= ins[i];
+                    end
+                    max <= (max < new_max) ? max : new_max; //update max based on old max
+                    old_max <= (max > new_max) ? max : new_max;
                 end
             end
             ins_s2 <= ins;
-            idx_s2 <= ins_s2[6:4];   // top 3 bits -> which edge pair
-            w_s2   <= ins_s2[3:0];
+            valid_s2 <=  valid;
+        end
+    end
+    always_ff @(posedge clk, negedge rst_n) begin
+        if(!rst_n) begin
+            old_max_s3 <= 0;
+            max_s3 <= 0;
+        end else begin
+            for(int i = 0; i < 4; i++) begin
+                sub_result_s3[i] <= ins_s2[i] - max_s2;
+            end
+        end
+    end
+
+    always_ff @(posedge clk, negedge rst_n) begin
+        if(!rst_n) begin
+            old_max_s4 <= 0;
+            max_s4 <= 0;
+        end else begin
+            if(first) begin
+                //pasthrough
+            end else begin
+                if(!done_computing) begin
+                    sum_s4 <= sum_s4 * (1 <<< (s4_old_max-s4_max));
+                end
+                idx_s4 <= sub_result_s3[6:4];   // top 3 bits -> which edge pair
+                w_s4   <= sub_result_s3[3:0]
+            end
         end
     end
 
@@ -112,6 +147,7 @@ module fp8_div (
                 ins_s3[i] <= 0;
             end
         end else begin
+
             for(int i = 0; i < 4;i++) begin
                 result_s3[i] <= exp2_lut[idx_s2] + ((w*exp2_lut[idx_s2+1] - exp2_lut[idx_s2]));
             end
