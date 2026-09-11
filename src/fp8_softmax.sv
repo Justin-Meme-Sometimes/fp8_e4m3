@@ -48,27 +48,9 @@ module fp8_div (
         endcase
     endfunction
 
-//     module soft_counter 
-// (input logic clk,
-//  input logic rst_n,
-//  input logic en,
-//  input logic clr,
-//  output logic [3:0] out);
-
     logic [3:0] softmax_cnt;
     logic softmax_inc, softmax_full;
     soft_counter count (.clk(clk), .rst_n(rst_n), .en(softmax_inc), .clr(softmax_clr), .out(softmax_cnt));
-
-    // module softmax_fsm(
-    // input logic clk,
-    // input logic rst_n,
-    // input logic start,   
-    // input logic compute_state,
-    // input logic done_computing,
-    // output logic first,
-    // output logic softmax_computing,
-    // output logic clr);
-
 
     logic done_computing, fsm_start, first, softmax_computing, softmax_clr;
     //fsm starts once the softmax row is not full and we are in the compute_state with a valid input
@@ -117,6 +99,7 @@ module fp8_div (
         if(!rst_n) begin
             old_max_s3 <= 0;
             max_s3 <= 0;
+            sum_s3 <= 0;
         end else begin
             for(int i = 0; i < 4; i++) begin
                 sub_result_s3[i] <= ins_s2[i] - max_s2;
@@ -146,8 +129,9 @@ module fp8_div (
             for(int i = 0; i < 4;i++) begin
                 ins_s3[i] <= 0;
             end
+            sum_s5 <= 0;
         end else begin
-
+            sum_s5 <= sum_s4;
             for(int i = 0; i < 4;i++) begin
                 result_s3[i] <= exp2_lut[idx_s2] + ((w*exp2_lut[idx_s2+1] - exp2_lut[idx_s2]));
             end
@@ -160,22 +144,34 @@ module fp8_div (
         pre_log_sum = sum_0 + sum_1;
     end
     
+    always_ff @(posedge clk, negedge rst_n) begin
+        (!rst_n) begin
+            sum_s6 <= 0;
+        end else begin
+            sum_s6 <= pre_log_sum + sum_s5;
+        end
+    end
     //always_ff block here
+
+    //all after loop and then this happens once
 
     always_comb begin
         one_pos = 0;
         f = 0;
+        idx = 0;
+        w = 0;
         for(int i = 0; i < MAX_WIDTH; i++) begin 
             if(sum[i]) begin
                 one_pos = i; //priority encoder for the MSB on
         end
 
         f_frac = (sum >>> (1 <<< k)); // this is a hardware split
+        idx = f_frac[6:4];   // top 3 bits -> which edge pair
+        w   = f_frac[3:0];
     end
 
 
-    assign idx = f_frac[6:4];   // top 3 bits -> which edge pair
-    assign w   = f_frac[3:0];
+    //pipeline stage here
 
     assign result = log2_lut[idx] + ((w*log2_lut[idx+1] - log2_lut[idx]) >> W_BITS);
     assign log_result = f_frac + one_pos;
@@ -187,6 +183,7 @@ module fp8_div (
             for (int i = 0; i < 4; i++) softmax_out[i] <= 0;
         end else begin
             for (int i = 0; i < 4; i++) softmax_out[i] <= ins_s5[i] - log_and_max;
+            out_valid <= 1;
             if(valid) begin
                 softmax_inc <= 1;
             end else begin
