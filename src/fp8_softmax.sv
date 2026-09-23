@@ -80,11 +80,11 @@ module fp8_div (
         end else begin
             for(int i = 0; i < 4; i++) begin
                 if(first) begin
-                    if(max > ins[i]) begin
+                    if(max < ins[i]) begin
                         max <= ins[i];
                     end
                 end else begin
-                    if(new_max > ins[i]) begin
+                    if(new_max < ins[i]) begin
                         new_max <= ins[i];
                     end
                     max <= (max < new_max) ? max : new_max; //update max based on old max
@@ -116,7 +116,7 @@ module fp8_div (
                 //pasthrough
             end else begin
                 if(!done_computing) begin
-                    sum_s4 <= sum_s4 * (1 <<< (s4_old_max-s4_max));
+                    sum_s4 <= sum_s4 * (1 >>> (s4_old_max-s4_max));
                 end
                 idx_s4 <= sub_result_s3[6:4];   // top 3 bits -> which edge pair
                 w_s4   <= sub_result_s3[3:0]
@@ -269,5 +269,4 @@ module soft_counter
         end
     end
  end
-//
 endmodule
