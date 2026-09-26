@@ -138,6 +138,18 @@ module fp8_div (
         end
     end
 
+    always_ff @(posedge clk, negedge rst_n) begin
+        if(!rst_n) begin
+            for(int i = 0; i < 4; i++) shifted_value_s5[i] <= 0;
+            s5_k <= 0;
+        end else begin
+            s5_k <= s4_k
+            for(int i = 0; i < 4; i++) begin
+                shifted_value_s5[i] = shifted_value_s5 >>> k;
+            end
+        end
+    end
+
     always_comb begin
         sum_1 = ins_s3[0] + ins_s3[1];
         sum_0 = ins_s3[2] + ins_s3[3];
