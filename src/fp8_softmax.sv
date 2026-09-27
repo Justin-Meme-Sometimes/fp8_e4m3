@@ -133,7 +133,7 @@ module fp8_div (
         end else begin
             sum_s5 <= sum_s4;
             for(int i = 0; i < 4;i++) begin
-                result_s3[i] <= exp2_lut[idx_s2] + ((w*exp2_lut[idx_s2+1] - exp2_lut[idx_s2]));
+                result_s3[i] <= exp2_lut[idx_s2] + (w*(exp2_lut[idx_s2+1] - exp2_lut[idx_s2]));
             end
         end
     end
@@ -143,7 +143,7 @@ module fp8_div (
             for(int i = 0; i < 4; i++) shifted_value_s5[i] <= 0;
             s5_k <= 0;
         end else begin
-            s5_k <= s4_k
+            s5_k <= s4_k;
             for(int i = 0; i < 4; i++) begin
                 shifted_value_s5[i] = shifted_value_s5 >>> k;
             end
@@ -162,17 +162,32 @@ module fp8_div (
         end else begin
             sum_s6 <= pre_log_sum + sum_s5;
         end
+        for(int i = 0; i < 4; i++) begin
+            stored_values[curr_val_stored_val + i] <= ins5[curr_stored_val + i];
+        end
     end
-    //always_ff block here
-
+    //always_ff block heres
     //all after loop and then this happens once
+
+    always_ff @(posedge clk, negedge rst_n) begin
+        if(!rst_n) begin
+            s6_stored_values <= 0;
+            s6_sum <= 0;
+        end else begin
+            
+                s6_stored_values <= s5_stored_values;
+                s6_sum <= s5_sum;
+                s6_done_computing <= s5_done_computing;
+        end
+    end
+
 
     always_comb begin
         one_pos = 0;
         f = 0;
         idx = 0;
         w = 0;
-        for(int i = 0; i < MAX_WIDTH; i++) begin 
+        for(int i = MAX_WIDTH-1; i > 0; i++) begin 
             if(sum[i]) begin
                 one_pos = i; //priority encoder for the MSB on
         end
@@ -186,7 +201,7 @@ module fp8_div (
     //pipeline stage here
 
     assign result = log2_lut[idx] + ((w*log2_lut[idx+1] - log2_lut[idx]) >> W_BITS);
-    assign log_result = f_frac + one_pos;
+    assign log_result = result + one_pos;
     assign log_and_max = log_result + max;
     
 
@@ -194,7 +209,7 @@ module fp8_div (
         if(!rst_n) begin
             for (int i = 0; i < 4; i++) softmax_out[i] <= 0;
         end else begin
-            for (int i = 0; i < 4; i++) softmax_out[i] <= ins_s5[i] - log_and_max;
+            for (int i = 0; i < 15; i++) softmax_out[i] <= s8_stored_values[i] - log_and_max;
             out_valid <= 1;
             if(valid) begin
                 softmax_inc <= 1;
