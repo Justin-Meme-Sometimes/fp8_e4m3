@@ -1,5 +1,5 @@
-//newton fp8_div used for softmax and layernorm
-module fp8_div (
+//fp_softmax used for softmax and layernorm
+module fp8_softmax (
     input logic clk,
     input logic rst_n,
     input logic signed [3:0][15:0] ins,
@@ -119,7 +119,7 @@ module fp8_div (
                     sum_s4 <= sum_s4 * (1 >>> (s4_old_max-s4_max));
                 end
                 idx_s4 <= sub_result_s3[6:4];   // top 3 bits -> which edge pair
-                w_s4   <= sub_result_s3[3:0]
+                w_s4   <= sub_result_s3[3:0];
             end
         end
     end
@@ -135,6 +135,7 @@ module fp8_div (
             for(int i = 0; i < 4;i++) begin
                 result_s3[i] <= exp2_lut[idx_s2] + (w*(exp2_lut[idx_s2+1] - exp2_lut[idx_s2]));
             end
+
         end
     end
 
@@ -161,9 +162,12 @@ module fp8_div (
             sum_s6 <= 0;
         end else begin
             sum_s6 <= pre_log_sum + sum_s5;
-        end
-        for(int i = 0; i < 4; i++) begin
-            stored_values[curr_val_stored_val + i] <= ins5[curr_stored_val + i];
+            if(in_valid && in_compute_max) begin
+                s6_out_valid;
+            end
+            for(int i = 0; i < 4; i++) begin
+                stored_values[curr_val_stored_val + i] <= ins5[curr_stored_val + i];
+            end
         end
     end
     //always_ff block heres
@@ -174,10 +178,9 @@ module fp8_div (
             s6_stored_values <= 0;
             s6_sum <= 0;
         end else begin
-            
-                s6_stored_values <= s5_stored_values;
-                s6_sum <= s5_sum;
-                s6_done_computing <= s5_done_computing;
+            s6_stored_values <= s5_stored_values;
+            s6_sum <= s5_sum;
+            s6_done_computing <= s5_done_computing;
         end
     end
 
@@ -200,7 +203,7 @@ module fp8_div (
 
     //pipeline stage here
 
-    assign result = log2_lut[idx] + ((w*log2_lut[idx+1] - log2_lut[idx]) >> W_BITS);
+    assign result = log2_lut[idx] + (w*(log2_lut[idx+1] - log2_lut[idx]) >> W_BITS);
     assign log_result = result + one_pos;
     assign log_and_max = log_result + max;
     
@@ -208,14 +211,12 @@ module fp8_div (
     always_ff @(posedge clk, negedge rst_n) begin
         if(!rst_n) begin
             for (int i = 0; i < 4; i++) softmax_out[i] <= 0;
+            out_valid <= 0;
         end else begin
             for (int i = 0; i < 15; i++) softmax_out[i] <= s8_stored_values[i] - log_and_max;
-            out_valid <= 1;
-            if(valid) begin
-                softmax_inc <= 1;
-            end else begin
-                softmax_inc <= 0;
-            end //we will pipeline valid all the through
+            if(s5_invalid) begin
+                out_valid <= 1;
+            end
         end
     end
     //ADD MORE
@@ -227,12 +228,13 @@ module softmax_fsm(
     input logic rst_n,
     input logic start,   
     input logic compute_state,
-    input logic done_computing,
-    output logic first,
-    output logic softmax_computing,
+    input logic done_find_max,
+    input logic done_log_sum,
+    output logic in_log_sum,
+    output logic in_compute_max,
     output logic clr);
 
-    typedef enum logic [5:0] {IDLE, FIRST, COMPUTE, DONE} state_t;
+    typedef enum logic [5:0] {IDLE, FIND_MAX, LOG_SUM, DONE} state_t;
     state_t current_state, next_state;
 
     always_ff @(posedge clk, negedge rst_n) begin
@@ -246,7 +248,8 @@ module softmax_fsm(
     always_comb begin
         next_state = current_state;
         first = 0;
-        softmax_computing = 0;
+        in_compute_max = 0;
+        in_log_sum = 0;
         clr = 0;
         case(current_state)
             IDLE: begin
@@ -256,17 +259,20 @@ module softmax_fsm(
                     next_state = COMPUTE;               
                 end
             end
-            FIRST : begin
-                first = 1;
-                softmax_computing = 1;
-                next_state = COMPUTE;
-            end
-            COMPUTE : begin
-                if(done_computing) begin
-                    next_state = COMPUTE;
-                    softmax_computing = 1;
+            FIND_MAX : begin
+                if(done_find_max) begin
+                    next_state = LOG_SUM;
                 end else begin
+                    next_state = FIND_MAX;
+                    in_compute_max = 1;
+                end
+            end
+            LOG_SUM : begin
+                if(done_log_sum) begin
                     next_state = DONE;
+                end else begin
+                    in_log_sum = 1;
+                    next_state = LOG_SUM;
                 end
             end
             DONE: begin
