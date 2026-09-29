@@ -295,58 +295,61 @@ module fp8_softmax (
 
     assign s6_inc_max_cnt = s7_inc_max_cnt;
 
-    //make sure to loop back with sum
+    make sure to loop back with sum
 
-    // //always_ff block heres
-    // //all after loop and then this happens once
+    //always_ff block heres
+    //all after loop and then this happens once
 
-    // always_ff @(posedge clk, negedge rst_n) begin
-    //     if(!rst_n) begin
-    //         s8_stored_values <= 0;
-    //         s8_sum <= 0;
-    //     end else begin
-    //         s8_stored_values <= s7_stored_values;
-    //         s8_sum <= s7_sum;
-    //         s8_done_computing <= s7_done_computing;
-    //     end
-    // end
-
-
-    // always_comb begin
-    //     one_pos = 0;
-    //     f = 0;
-    //     idx = 0;
-    //     w = 0;
-    //     for(int i = MAX_WIDTH-1; i > 0; i++) begin
-    //         if(sum[i]) begin
-    //             one_pos = i; //priority encoder for the MSB on
-    //     end
-
-    //     f_frac = (sum >>> (1 <<< k)); // this is a hardware split
-    //     idx = f_frac[6:4];   // top 3 bits -> which edge pair
-    //     w   = f_frac[3:0];
-    // end
+    always_ff @(posedge clk, negedge rst_n) begin
+        if(!rst_n) begin
+            s8_stored_values <= 0;
+            s8_sum <= 0;
+        end else begin
+            if(in_log_sum) begin
+                s8_stored_values <= s7_stored_values;
+                s8_sum <= s7_sum;
+                s8_done_computing <= s7_done_computing;
+            end
+        end
+    end
 
 
-    // //pipeline stage here
+    always_comb begin
+        one_pos = 0;
+        f = 0;
+        idx = 0;
+        w = 0;
+        for(int i = MAX_WIDTH-1; i > 0; i++) begin
+            if(sum[i]) begin
+                one_pos = i; //priority encoder for the MSB on
+        end
 
-    // assign result = log2_lut[idx] + (w*(log2_lut[idx+1] - log2_lut[idx]) >> W_BITS);
-    // assign log_result = result + one_pos;
-    // assign log_and_max = log_result + max;
+        f_frac = (sum >>> (1 <<< k)); // this is a hardware split
+        idx = f_frac[6:4];   // top 3 bits -> which edge pair
+        w   = f_frac[3:0];
+    end
+    
+    
+
+    //pipeline stage here
+
+    assign result = log2_lut[idx] + (w*(log2_lut[idx+1] - log2_lut[idx]) >> W_BITS);
+    assign log_result = result + one_pos;
+    assign log_and_max = log_result + max;
 
 
-    // always_ff @(posedge clk, negedge rst_n) begin
-    //     if(!rst_n) begin
-    //         for (int i = 0; i < 4; i++) softmax_out[i] <= 0;
-    //         out_valid <= 0;
-    //     end else begin
-    //         for (int i = 0; i < 15; i++) softmax_out[i] <= s8_stored_values[i] - log_and_max;
-    //         if(s5_invalid) begin
-    //             out_valid <= 1;
-    //         end
-    //     end
-    // end
-    // //ADD MORE
+    always_ff @(posedge clk, negedge rst_n) begin
+        if(!rst_n) begin
+            for (int i = 0; i < 4; i++) softmax_out[i] <= 0;
+            out_valid <= 0;
+        end else begin
+            for (int i = 0; i < 15; i++) softmax_out[i] <= s8_stored_values[i] - log_and_max;
+            if(s5_invalid) begin
+                out_valid <= 1;
+            end
+        end
+    end
+    //ADD MORE
 
 endmodule
 
