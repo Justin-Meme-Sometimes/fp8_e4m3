@@ -276,6 +276,8 @@ module fp8_softmax (
             sum_s7 <= 0;
             s7_inc_max_cnt <= 0;
             s7_curr_val_stored <= 0;
+            s7_updated_max <= 0;
+            s7_valid <= 0;
             for(int i = 0; i < 4; i++) ins_s7[i] <= 0;
         end else begin
             if(in_compute_max) begin
@@ -288,6 +290,7 @@ module fp8_softmax (
                 for(int i = 0; i < 4; i++) begin
                     s7_stored_values[s7_curr_val_stored + i] <= ins_s6[i];
                 end
+                s7_updated_max <= s6_updated_max;
                 s7_curr_val_stored <= s7_curr_val_stored + 4'd4;
             end
         end
@@ -295,7 +298,7 @@ module fp8_softmax (
 
     assign s6_inc_max_cnt = s7_inc_max_cnt;
 
-    make sure to loop back with sum
+    //make sure to loop back with sum
 
     //always_ff block heres
     //all after loop and then this happens once
@@ -304,11 +307,15 @@ module fp8_softmax (
         if(!rst_n) begin
             s8_stored_values <= 0;
             s8_sum <= 0;
+            s8_updated_max <= 0;
+            s8_valid;
         end else begin
             if(in_log_sum) begin
                 s8_stored_values <= s7_stored_values;
                 s8_sum <= s7_sum;
                 s8_done_computing <= s7_done_computing;
+                s8_updated_max <= s7_updated_max;
+                s8_valid <= s7_valid;
             end
         end
     end
@@ -320,7 +327,7 @@ module fp8_softmax (
         idx = 0;
         w = 0;
         for(int i = MAX_WIDTH-1; i > 0; i++) begin
-            if(sum[i]) begin
+            if(s8_sum[i]) begin
                 one_pos = i; //priority encoder for the MSB on
         end
 
@@ -329,13 +336,48 @@ module fp8_softmax (
         w   = f_frac[3:0];
     end
     
-    
+
+    always_ff @(posedge clk, negedge rst_n) begin
+        if(!rst_n) begin
+            idx_s9 <= 0;
+            w_s9 <= 0;
+            one_pos_s9 <= 0;
+            updated_max_s9 <= 0;
+            stored_values_s9 <= 0;
+            valid_s9 <= 0;
+        end else begin
+            idx_s9 <= idx;
+            w_s9 <= w;
+            one_pos_s9 <= one_pos;
+            updated_max_s9 <= s8_updated_max;
+            stored_values_s9 <= stored_values_s8;
+            valid_s9 <= valid_s8;
+        end
+    end
 
     //pipeline stage here
+    always_ff @(posedge clk, negedge rst_n) begin
+        if(!rst_n) begin
+            result_s10 <= 0;
+            one_pos_s10 <= 0;
+            updated_max_s10 <= 0;
+            stored_values_s10 <= '0;
+            valid_s10 <= 0;
+        end else begin
+            result_s10 <= log2_lut[idx] + (w*(log2_lut[idx+1] - log2_lut[idx]) >> W_BITS);
+            one_pos_s10 <= one_pos_s9;
+            updated_max_s10 <= updated_max_s9;
+            stored_values_s10 <= stored_values_s9;
+            valid_s10 <= valid_s9;
+        end
+    end
 
-    assign result = log2_lut[idx] + (w*(log2_lut[idx+1] - log2_lut[idx]) >> W_BITS);
-    assign log_result = result + one_pos;
+    assign log_result = result_s10 + one_pos;
     assign log_and_max = log_result + max;
+
+    // always_ff @(posedge clk, negedge rst_n) begin
+    //     if 
+    // end
 
 
     always_ff @(posedge clk, negedge rst_n) begin
@@ -343,8 +385,8 @@ module fp8_softmax (
             for (int i = 0; i < 4; i++) softmax_out[i] <= 0;
             out_valid <= 0;
         end else begin
-            for (int i = 0; i < 15; i++) softmax_out[i] <= s8_stored_values[i] - log_and_max;
-            if(s5_invalid) begin
+            for (int i = 0; i < 15; i++) softmax_out[i] <= s10_stored_values[i] - log_and_max;
+            if(valid_s10) begin
                 out_valid <= 1;
             end
         end
