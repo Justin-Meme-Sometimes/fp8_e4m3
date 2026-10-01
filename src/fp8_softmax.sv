@@ -92,7 +92,7 @@ module fp8_softmax (
     logic softmax_inc, softmax_full, done_log_sum, done_find_max;
     logic in_log_sum, in_compute_max, in_first;
 
-
+    //softmax
 
     soft_counter max_count_fsm (.clk(clk), .rst_n(rst_n), .en(s6_inc_max_cnt), .clr(softmax_clr), .out(max_count_cnt));
 
@@ -281,7 +281,7 @@ module fp8_softmax (
             for(int i = 0; i < 4; i++) ins_s7[i] <= 0;
         end else begin
             if(in_compute_max) begin
-                sum_s7 <= prelog_sum + (sum_s6 >> (s6_updated_max - s6_old_max));
+                sum_s7 <= prelog_sum + (sum_s7 >> (s6_updated_max - s6_old_max));
                 if(in_valid && in_compute_max) begin
                     s7_inc_max_cnt <= 1; // increase the counter for how many interations this needs to go through
                 end else begin
@@ -331,7 +331,7 @@ module fp8_softmax (
                 one_pos = i; //priority encoder for the MSB on
         end
 
-        f_frac = (sum >>> (1 <<< k)); // this is a hardware split
+        f_frac = sum >>> one_pos; // this is a hardware split
         idx = f_frac[6:4];   // top 3 bits -> which edge pair
         w   = f_frac[3:0];
     end
@@ -346,12 +346,14 @@ module fp8_softmax (
             stored_values_s9 <= 0;
             valid_s9 <= 0;
         end else begin
-            idx_s9 <= idx;
-            w_s9 <= w;
-            one_pos_s9 <= one_pos;
-            updated_max_s9 <= s8_updated_max;
-            stored_values_s9 <= stored_values_s8;
-            valid_s9 <= valid_s8;
+            if(is_log_sum) begin
+                idx_s9 <= idx;
+                w_s9 <= w;
+                one_pos_s9 <= one_pos;
+                updated_max_s9 <= s8_updated_max;
+                stored_values_s9 <= stored_values_s8;
+                valid_s9 <= valid_s8;
+            end
         end
     end
 
@@ -364,29 +366,37 @@ module fp8_softmax (
             stored_values_s10 <= '0;
             valid_s10 <= 0;
         end else begin
-            result_s10 <= log2_lut[idx] + (w*(log2_lut[idx+1] - log2_lut[idx]) >> W_BITS);
-            one_pos_s10 <= one_pos_s9;
-            updated_max_s10 <= updated_max_s9;
-            stored_values_s10 <= stored_values_s9;
-            valid_s10 <= valid_s9;
+            if(is_log_sum) begin
+                result_s10 <= log2_lut[idx] + (w*(log2_lut[idx+1] - log2_lut[idx]) >> W_BITS);
+                one_pos_s10 <= one_pos_s9;
+                updated_max_s10 <= updated_max_s9;
+                stored_values_s10 <= stored_values_s9;
+                valid_s10 <= valid_s9;
+            end
         end
     end
 
     assign log_result = result_s10 + one_pos;
     assign log_and_max = log_result + max;
 
-    // always_ff @(posedge clk, negedge rst_n) begin
-    //     if 
-    // end
-
+    genvar j;
+    generate
+        for(j = 0; j < 15; j++) begin
+            always_ff @(posedge clk, negedge rst_n) begin
+                if(!rst_n) begin
+                    softmax_out[i] <= 0;
+                end else begin
+                    if(is_log_sum) softmax_out[i] <= s10_stored_values[i] - log_and_max;
+                end
+            end
+        end
+    endgenerate
 
     always_ff @(posedge clk, negedge rst_n) begin
         if(!rst_n) begin
-            for (int i = 0; i < 4; i++) softmax_out[i] <= 0;
             out_valid <= 0;
         end else begin
-            for (int i = 0; i < 15; i++) softmax_out[i] <= s10_stored_values[i] - log_and_max;
-            if(valid_s10) begin
+            if(valid_s10 && is_log_sum) begin
                 out_valid <= 1;
             end
         end
