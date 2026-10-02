@@ -160,6 +160,21 @@ module fp8_softmax (
         end
     end
 
+    genvar ii;
+    generate
+        for(ii = 0 ii < 4; ii++) begin
+            always_ff @(posedge clk, negedge rst_n) begin
+                if(!rst_n) begin
+                    sub_result_s3[i] <= 0;
+                    ins3[i] <= 0;
+                end else begin
+                    sub_result_s3[i] <= ins_s2[i] - updated_max_s2;
+                    ins_s3[i] <= ins_s2[i];
+                end
+            end 
+        end
+    endgenerate
+
      always_ff @(posedge clk, negedge rst_n) begin
         if(!rst_n) begin
             old_max_s3 <= 0;
@@ -168,12 +183,7 @@ module fp8_softmax (
             valid_s3 <= 0;
             updated_max_s3 <= 0;
             old_max_s3_p <= 0;
-            for(int i = 0; i < 4; i++) ins_s3[i] <= 0;
         end else begin
-            for(int i = 0; i < 4; i++) begin
-                sub_result_s3[i] <= ins_s2[i] - updated_max_s2;
-                ins_s3[i] <= ins_s2[i];
-            end
             valid_s3 <= valid_s2;
             updated_max_s3 <= updated_max_s2;
             old_max_s3_p <= old_max_s2;
@@ -187,30 +197,41 @@ module fp8_softmax (
             valid_s4 <= 0;
             updated_max_s4 <= 0;
             old_max_s4_p <= 0;
-            for(int i = 0; i < 4; i++) begin
-                idx_s4[i] <= 0;
-                w_s4[i] <= 0;
-                k_s4[i] <= 0;
-                ins_s4[i] <= 0;
-            end
         end else begin
             if(first) begin
                 //pasthrough
             end else begin
                 if(in_compute_max) begin
-                    for(int i = 0; i < 4; i++) begin
-                        idx_s4[i] <= sub_result_s3[i][6:4];
-                        w_s4[i]   <= sub_result_s3[i][3:0];
-                        k_s4[i]   <= sub_result_s3[i][15:7];
-                    end
+                    valid_s4 <= valid_s3;
+                    updated_max_s4 <= updated_max_s3;
+                    old_max_s4_p <= old_max_s3_p;
                 end
             end
-            for(int i = 0; i < 4; i++) ins_s4[i] <= ins_s3[i];
-            valid_s4 <= valid_s3;
-            updated_max_s4 <= updated_max_s3;
-            old_max_s4_p <= old_max_s3_p;
         end
     end
+
+     
+    genvar iii;
+    generate
+        for(iii = 0 iii < 4; iii++) begin
+            always_ff @(posedge clk, negedge rst_n) begin
+                if(!rst_n) begin
+                    idx_s4[iii] <= 0;
+                    w_s4[iii] <= 0;
+                    k_s4[iii] <= 0;
+                    ins_s4[iii] <= 0;
+                end else begin
+                    if(in_compute_max && !first) begin
+                        idx_s4[iii] <= sub_result_s3[iii][6:4];
+                        w_s4[iii]   <= sub_result_s3[iii][3:0];
+                        k_s4[iii]   <= sub_result_s3[iii][15:7];
+                        ins_s4[iii] <= ins_s3[iii];
+                    end
+                end
+            end 
+        end
+    endgenerate
+
 
     always_ff @(posedge clk, negedge rst_n) begin
         if(!rst_n) begin
@@ -228,11 +249,6 @@ module fp8_softmax (
         end else begin
             if(in_compute_max) begin
                 if(!in_first) sum_s5 <= sum_s4;
-                for(int i = 0; i < 4; i++) begin
-                    result_s5[i] <= exp2_lut(idx_s4[i]) + ((w_s4[i]*(exp2_lut(idx_s4[i]+1) - exp2_lut(idx_s4[i]))) >> W_BITS); //maybe need to be a genvar
-                    s5_k[i] <= k_s4[i];
-                    ins_s5[i] <= ins_s4[i];
-                end
                  // should be some value for k that will pipe into the next stage;
                 valid_s5 <= valid_s4;
                 s5_updated_max <= updated_max_s4;
@@ -240,6 +256,26 @@ module fp8_softmax (
             end
         end
     end
+
+
+    genvar iii;
+    generate
+        for(iii = 0 iii < 4; iii++) begin
+            always_ff @(posedge clk, negedge rst_n) begin
+                if(!rst_n) begin
+                    ins_s5[i] <= 0;
+                    results_s5[i] <= 0;;
+                    s5_k[i] <= 0;
+                end else begin
+                    if(in_compute_max) begin
+                        result_s5[i] <= exp2_lut(idx_s4[i]) + ((w_s4[i]*(exp2_lut(idx_s4[i]+1) - exp2_lut(idx_s4[i]))) >> W_BITS); //maybe need to be a genvar
+                        s5_k[i] <= k_s4[i];
+                        ins_s5[i] <= ins_s4[i];
+                    end
+                end
+            end 
+        end
+    endgenerate
 
     always_ff @(posedge clk, negedge rst_n) begin
         if(!rst_n) begin
