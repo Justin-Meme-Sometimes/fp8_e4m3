@@ -1,5 +1,7 @@
 //fp_softmax used for softmax and layernorm
-module fp8_softmax (
+module fp8_softmax 
+    #(parameter MAX_WIDTH = 16)
+    (
     input logic clk,
     input logic rst_n,
     input logic signed [3:0][15:0] ins,
@@ -7,7 +9,7 @@ module fp8_softmax (
     input logic compute_state,
     input logic clr,
     input logic valid,
-    output logic signed[3:0][15:0] out,
+    output logic signed[15:0][15:0] out,
     output logic out_valid);
 
     localparam int W_BITS = 4;
@@ -38,7 +40,7 @@ module fp8_softmax (
     logic [3:0][15:0] results_s5, result_s5;
     logic [3:0][15:0] shifted_value_s5;
     logic [3:0][15:0] s5_k;
-    logic [15:0] sum_s4, sum_s5, sum_s6, sum_s7;
+    logic [15:0] sum_s4, sum_s5, sum_s6, sum_s7, sum_s7_pre;
     logic [3:0][15:0] ins_s6;
     logic [3:0][15:0] shifted_value_s6;
     logic [3:0][15:0] ins_s7;
@@ -55,6 +57,36 @@ module fp8_softmax (
 
     logic s6_inc_max_cnt;
     logic [4:0] max_count_cnt;
+
+    // S7 valid/max pipe signals
+    logic [15:0] s7_updated_max;
+    logic s7_valid;
+
+    // S8
+    logic [15:0] s8_stored_values [0:15];
+    logic [15:0] s8_sum;
+    logic [15:0] s8_updated_max;
+    logic s8_valid;
+
+    // log2 split (combinational)
+    logic [15:0] one_pos, f, f_frac;
+    logic [3:0]  idx, w;
+
+    // S9
+    logic [3:0]  idx_s9, w_s9;
+    logic [15:0] one_pos_s9, updated_max_s9;
+    logic [15:0] stored_values_s9 [0:15];
+    logic valid_s9;
+
+    // S10
+    logic [15:0] result_s10, one_pos_s10, updated_max_s10;
+    logic [15:0] stored_values_s10 [0:15];
+    logic valid_s10;
+
+    logic [15:0] log_result, log_and_max;
+
+    // full 16-entry result buffer; `out` port is only 4 lanes (see note)
+    logic signed [15:0] softmax_out [0:15];
 
         function automatic logic [9:0] log2_lut(
         input logic [3:0] addr
@@ -91,6 +123,7 @@ module fp8_softmax (
     logic [3:0] max_cnt;
     logic softmax_inc, softmax_full, done_log_sum, done_find_max;
     logic in_log_sum, in_compute_max, in_first;
+    logic row_done;
 
     //softmax
 
@@ -102,8 +135,8 @@ module fp8_softmax (
     //fsm starts once the softmax row is not full and we are in the compute_state with a valid input
 
     assign fsm_start = compute_state && valid;
-    assign done_log_sum = max_count_cnt == 4'd4;
-    assign in_first = max_count_cnt == 4'd1; //first iteration we don't rescale max or sum at all so we check for this
+    assign done_find_max = s7_curr_val_stored == 5'd16;
+    assign in_first = s7_curr_val_stored == 4'd0; //first iteration we don't rescale max or sum at all so we check for this
 
 
     //no we need to add it so it updates in real time.
@@ -113,7 +146,7 @@ module fp8_softmax (
                     .start(fsm_start),
                     .compute_state(compute_state),
                     .done_find_max(done_find_max),
-                    .done_log_sum(done_computing),
+                    .done_log_sum(out_valid),
                     .first(first),
                     .in_log_sum(in_log_sum),
                     .in_compute_max(in_compute_max),
@@ -125,7 +158,7 @@ module fp8_softmax (
         chunk_max_intermediate_2 = (ins[2] > ins[3]) ? ins[2] : ins[3];
         chunk_max = (chunk_max_intermediate_1 > chunk_max_intermediate_2) ? chunk_max_intermediate_1 : chunk_max_intermediate_2;
         old_max     = max;
-        if(first) begin
+        if(in_first) begin
             updated_max = chunk_max;
         end else begin
             updated_max = (max > chunk_max) ? max : chunk_max; //update max based on old max
@@ -199,7 +232,7 @@ module fp8_softmax (
                 ins_s4[i] <= 0;
             end
         end else begin
-            if(first) begin
+            if(in_first) begin
                 //pasthrough
             end else begin
                 if(in_compute_max) begin
@@ -273,8 +306,11 @@ module fp8_softmax (
         sum_1 = shifted_value_s6[0] + shifted_value_s6[1];
         sum_0 = shifted_value_s6[2] + shifted_value_s6[3];
         prelog_sum = sum_0 + sum_1;
+        sum_s7_pre = prelog_sum + (sum_s7 >> (s6_updated_max - s6_old_max));
+        row_done = s7_curr_val_stored == 5'd16;
     end
 
+    
     always_ff @(posedge clk, negedge rst_n) begin
         if(!rst_n) begin
             sum_s7 <= 0;
@@ -284,8 +320,10 @@ module fp8_softmax (
             s7_valid <= 0;
             for(int i = 0; i < 4; i++) ins_s7[i] <= 0;
         end else begin
-            if(in_compute_max) begin
-                sum_s7 <= prelog_sum + (sum_s7 >> (s6_updated_max - s6_old_max));
+            if(softmax_clr) begin
+                 s7_curr_val_stored <= 0; 
+            end else if(in_compute_max) begin
+                sum_s7 <= sum_s7_pre;
                 if(in_valid && in_compute_max) begin
                     s7_inc_max_cnt <= 1; // increase the counter for how many interations this needs to go through
                 end else begin
@@ -294,9 +332,10 @@ module fp8_softmax (
                 for(int i = 0; i < 4; i++) begin
                     s7_stored_values[s7_curr_val_stored + i] <= ins_s6[i];
                 end
-                s7_updated_max <= s6_updated_max;
-                s7_curr_val_stored <= s7_curr_val_stored + 4'd4;
+                s7_updated_max <= s6_updated_max; 
+                if(s7_curr_val_stored != 5'd16) s7_curr_val_stored <= s7_curr_val_stored + 4'd4;
             end
+            s7_valid <= row_done;
         end
     end
 
@@ -314,12 +353,11 @@ module fp8_softmax (
             s8_stored_values <= 0;
             s8_sum <= 0;
             s8_updated_max <= 0;
-            s8_valid;
+            s8_valid <= 0;
         end else begin
-            if(in_log_sum) begin
+            if(s7_valid) begin
                 s8_stored_values <= s7_stored_values;
-                s8_sum <= s7_sum;
-                s8_done_computing <= s7_done_computing;
+                s8_sum <= sum_s7;
                 s8_updated_max <= s7_updated_max;
                 s8_valid <= s7_valid;
             end
@@ -332,12 +370,13 @@ module fp8_softmax (
         f = 0;
         idx = 0;
         w = 0;
-        for(int i = MAX_WIDTH-1; i > 0; i++) begin
+        for(int i = MAX_WIDTH-1; i > 0; i--) begin
             if(s8_sum[i]) begin
                 one_pos = i; //priority encoder for the MSB on
+            end
         end
 
-        f_frac = sum >>> one_pos; // this is a hardware split
+        f_frac = s8_sum >>> one_pos; // this is a hardware split
         idx = f_frac[6:4];   // top 3 bits -> which edge pair
         w   = f_frac[3:0];
     end
@@ -352,13 +391,13 @@ module fp8_softmax (
             stored_values_s9 <= 0;
             valid_s9 <= 0;
         end else begin
-            if(is_log_sum) begin
+            if(s8_valid) begin
                 idx_s9 <= idx;
                 w_s9 <= w;
                 one_pos_s9 <= one_pos;
                 updated_max_s9 <= s8_updated_max;
-                stored_values_s9 <= stored_values_s8;
-                valid_s9 <= valid_s8;
+                stored_values_s9 <= s8_stored_values;
+                valid_s9 <= s8_valid;
             end
         end
     end
@@ -372,8 +411,8 @@ module fp8_softmax (
             stored_values_s10 <= '0;
             valid_s10 <= 0;
         end else begin
-            if(is_log_sum) begin
-                result_s10 <= log2_lut[idx] + (w*(log2_lut[idx+1] - log2_lut[idx]) >> W_BITS);
+            if(valid_s9) begin
+                result_s10 <= log2_lut(idx) + (w*(log2_lut(idx+1) - log2_lut(idx)) >> W_BITS);
                 one_pos_s10 <= one_pos_s9;
                 updated_max_s10 <= updated_max_s9;
                 stored_values_s10 <= stored_values_s9;
@@ -382,15 +421,15 @@ module fp8_softmax (
         end
     end
 
-    assign log_result = result_s10 + one_pos;
+    assign log_result = result_s10 + one_pos_s10;
     assign log_and_max = log_result + max;
 
     always_ff @(posedge clk, negedge rst_n) begin
         if(!rst_n) begin
-            for(int j = 0; j < 15; j++) softmax_out[j] <= 0;
+            for(int j = 0; j < 16; j++) softmax_out[j] <= 0;
         end else begin
-            if(is_log_sum) begin
-                for(int j = 0; j < 15; j++) softmax_out[j] <= s10_stored_values[j] - log_and_max;
+            if(valid_s10) begin
+                for(int j = 0; j < 16; j++) softmax_out[j] <= stored_values_s10[j] - log_and_max;
             end
         end
     end
@@ -399,12 +438,20 @@ module fp8_softmax (
         if(!rst_n) begin
             out_valid <= 0;
         end else begin
-            if(valid_s10 && is_log_sum) begin
+            if(valid_s10) begin
                 out_valid <= 1;
+            end else begin
+                out_valid <= 0;
             end
         end
     end
-    //ADD MORE
+
+    always_comb begin
+        for(int i = 0; i < 16; i++) begin
+            out[i] =  softmax_out[i];
+        end
+    end
+
 
 endmodule
 
@@ -420,7 +467,7 @@ module softmax_fsm(
     output logic in_compute_max,
     output logic clr);
 
-    typedef enum logic [5:0] {IDLE, FIND_MAX, LOG_SUM, DONE} state_t;
+    typedef enum logic [5:0] {IDLE, FIRST, FIND_MAX, LOG_SUM, DONE} state_t;
     state_t current_state, next_state;
 
     always_ff @(posedge clk, negedge rst_n) begin
