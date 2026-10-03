@@ -279,20 +279,12 @@ module fp8_softmax (
 
     always_ff @(posedge clk, negedge rst_n) begin
         if(!rst_n) begin
-            for(int i = 0; i < 4; i++) begin
-                shifted_value_s6[i] <= 0;
-                ins_s6[i] <= 0;
-            end
             sum_s6 <= 0;
             valid_s6 <= 0;
             s6_updated_max <= 0;
             s6_old_max <= 0;
         end else begin
             if(in_compute_max) begin
-                for(int i = 0; i < 4; i++) begin
-                    ins_s6[i] <= ins_s5[i];
-                    shifted_value_s6[i] <= result_s5[i] >>> (-s5_k[i]);
-                end
                 sum_s6 <= sum_s5;
                 valid_s6 <= valid_s5;
                 s6_updated_max <= s5_updated_max;
@@ -300,6 +292,24 @@ module fp8_softmax (
             end
         end
     end
+
+    
+    genvar x;
+    generate
+        for(x = 0 iii < 4; iii++) begin
+            always_ff @(posedge clk, negedge rst_n) begin
+                if(!rst_n) begin
+                    shifted_value_s6[x] <= 0;
+                    ins_s6[x] <= 0;
+                end else begin
+                    if(in_compute_max) begin
+                         ins_s6[x] <= ins_s5[x];
+                         shifted_value_s6[x] <= result_s5[x] >>> (-s5_k[x]);
+                    end
+                end
+            end 
+        end
+    endgenerate
 
     always_comb begin
         sum_1 = shifted_value_s6[0] + shifted_value_s6[1];
@@ -331,6 +341,8 @@ module fp8_softmax (
             end
         end
     end
+
+    
 
     assign s6_inc_max_cnt = s7_inc_max_cnt;
 
