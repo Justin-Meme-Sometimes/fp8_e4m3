@@ -350,7 +350,7 @@ module fp8_softmax
 
     always_ff @(posedge clk, negedge rst_n) begin
         if(!rst_n) begin
-            s8_stored_values <= 0;
+            s8_stored_values <= '{default: 0};
             s8_sum <= 0;
             s8_updated_max <= 0;
             s8_valid <= 0;
@@ -388,7 +388,7 @@ module fp8_softmax
             w_s9 <= 0;
             one_pos_s9 <= 0;
             updated_max_s9 <= 0;
-            stored_values_s9 <= 0;
+            stored_values_s9 <= '{default: 0};
             valid_s9 <= 0;
         end else begin
             if(s8_valid) begin
@@ -408,7 +408,7 @@ module fp8_softmax
             result_s10 <= 0;
             one_pos_s10 <= 0;
             updated_max_s10 <= 0;
-            stored_values_s10 <= '0;
+            stored_values_s10 <= '{default: 0};
             valid_s10 <= 0;
         end else begin
             if(valid_s9) begin
