@@ -130,16 +130,12 @@ module fp8_softmax
     soft_counter max_count_fsm (.clk(clk), .rst_n(rst_n), .en(s6_inc_max_cnt), .clr(softmax_clr), .out(max_count_cnt));
 
 
-
     logic done_computing, fsm_start, first, softmax_computing, softmax_clr;
     //fsm starts once the softmax row is not full and we are in the compute_state with a valid input
 
     assign fsm_start = compute_state && valid;
     assign done_find_max = s7_curr_val_stored == 5'd16;
     assign in_first = s7_curr_val_stored == 4'd0; //first iteration we don't rescale max or sum at all so we check for this
-
-
-    //no we need to add it so it updates in real time.
 
     softmax_fsm fsm(.clk(clk),
                     .rst_n(rst_n),
