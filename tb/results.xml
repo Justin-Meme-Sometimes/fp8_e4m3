@@ -1,0 +1,8 @@
+<testsuites name="results">
+  <testsuite name="all" package="all">
+    <property name="random_seed" value="1791690572" />
+    <testcase name="softmax_stage_by_stage" classname="test_softmax_stages" file="/home/juiceboy/fp8_e4m3/tb/test_softmax_stages.py" lineno="239" time="0.07507586479187012" sim_time_ns="8795.001" ratio_time="117148.18103503753">
+      <failure message="Test failed with RANDOM_SEED=1791690572" />
+    </testcase>
+  </testsuite>
+</testsuites>

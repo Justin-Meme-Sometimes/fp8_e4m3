@@ -133,7 +133,7 @@ module fp8_softmax
     logic done_computing, fsm_start, first, softmax_computing, softmax_clr;
     //fsm starts once the softmax row is not full and we are in the compute_state with a valid input
 
-    assign fsm_start = compute_state && valid;
+    assign fsm_start = valid;
     assign done_find_max = s7_curr_val_stored == 5'd16;
     assign in_first = s7_curr_val_stored == 4'd0; //first iteration we don't rescale max or sum at all so we check for this
 
@@ -179,13 +179,12 @@ module fp8_softmax
             updated_max_s2 <= 0;
             old_max_s2 <= 0;
         end else begin
-            if(in_compute_max) begin
+           
                 if(!in_first) sum <= sum_s7;
                 ins_s2 <= ins;
                 valid_s2 <= valid;
                 updated_max_s2 <= updated_max;
                 old_max_s2 <= old_max;
-            end
         end
     end
 
@@ -202,12 +201,12 @@ module fp8_softmax
                 ins_s3[i] <= 0;
             end
         end else begin
-            if(in_compute_max) begin
+          
                 for(int i = 0; i < 4; i++) begin
                     sub_result_s3[i] <= ins_s2[i] - updated_max_s2;
                     ins_s3[i] <= ins_s2[i];
                 end
-            end
+            
             valid_s3 <= valid_s2;
             updated_max_s3 <= updated_max_s2;
             old_max_s3_p <= old_max_s2;
@@ -231,13 +230,13 @@ module fp8_softmax
             if(in_first) begin
                 //pasthrough
             end else begin
-                if(in_compute_max) begin
+              
                     for(int i = 0; i < 4; i++) begin
                         idx_s4[i] <= sub_result_s3[i][6:4];
                         w_s4[i]   <= sub_result_s3[i][3:0];
                         k_s4[i]   <= sub_result_s3[i][15:7];
                         ins_s4[i] <= ins_s3[i];
-                    end
+                 
                     valid_s4 <= valid_s3;
                     updated_max_s4 <= updated_max_s3;
                     old_max_s4_p <= old_max_s3_p;
@@ -260,7 +259,7 @@ module fp8_softmax
                 s5_k[i] <= 0;
             end
         end else begin
-            if(in_compute_max) begin
+            
                 if(!in_first) sum_s5 <= sum_s4;
                 for(int i = 0; i < 4; i++) begin
                     result_s5[i] <= exp2_lut(idx_s4[i]) + ((w_s4[i]*(exp2_lut(idx_s4[i]+1) - exp2_lut(idx_s4[i]))) >> W_BITS); //maybe need to be a genvar
@@ -270,7 +269,7 @@ module fp8_softmax
                 valid_s5 <= valid_s4;
                 s5_updated_max <= updated_max_s4;
                 s5_old_max <= old_max_s4_p;
-            end
+        
         end
     end
 
@@ -285,7 +284,7 @@ module fp8_softmax
                 ins_s6[i] <= 0;
             end
         end else begin
-            if(in_compute_max) begin
+            
                 for(int i = 0; i < 4; i++) begin
                     ins_s6[i] <= ins_s5[i];
                     shifted_value_s6[i] <= result_s5[i] >>> (-s5_k[i]);
@@ -294,7 +293,7 @@ module fp8_softmax
                 valid_s6 <= valid_s5;
                 s6_updated_max <= s5_updated_max;
                 s6_old_max <= s5_old_max;
-            end
+        
         end
     end
 
@@ -318,9 +317,9 @@ module fp8_softmax
         end else begin
             if(softmax_clr) begin
                  s7_curr_val_stored <= 0; 
-            end else if(in_compute_max) begin
+            end else begin
                 sum_s7 <= sum_s7_pre;
-                if(in_valid && in_compute_max) begin
+                if(in_valid) begin
                     s7_inc_max_cnt <= 1; // increase the counter for how many interations this needs to go through
                 end else begin
                     s7_inc_max_cnt <= 0; //other wise we don't care
