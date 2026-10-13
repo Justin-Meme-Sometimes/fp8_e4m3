@@ -43,6 +43,7 @@ class alignas(VL_CACHE_LINE_BYTES)Vtop__Syms final : public VerilatedSyms {
     VerilatedScope __Vscope_fp8_softmax__unnamedblk13;
     VerilatedScope __Vscope_fp8_softmax__unnamedblk14;
     VerilatedScope __Vscope_fp8_softmax__unnamedblk15;
+    VerilatedScope __Vscope_fp8_softmax__unnamedblk16;
     VerilatedScope __Vscope_fp8_softmax__unnamedblk2;
     VerilatedScope __Vscope_fp8_softmax__unnamedblk3;
     VerilatedScope __Vscope_fp8_softmax__unnamedblk4;

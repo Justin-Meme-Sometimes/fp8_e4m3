@@ -44,6 +44,7 @@ module fp8_softmax
     logic signed [3:0][15:0] ins_s6;
     logic signed [3:0][15:0] shifted_value_s6;
     logic signed [3:0][15:0] ins_s7;
+    logic signed [31:0] shifted_value_s7;
 
     logic signed [3:0][15:0] ins_s3, ins_s4;
 
@@ -84,6 +85,13 @@ module fp8_softmax
     logic valid_s10;
 
     logic signed [15:0] log_result, log_and_max;
+
+    logic signed [15:0] sub_s7, s7_res, rescale_factor_s7;
+    logic signed [31:0] product;
+    logic signed [8:0] s7_k;
+    logic signed [20:0] int_sum_s7;
+    logic [3:0] s7_idx;
+    logic [3:0] s7_w;
 
     // full 16-entry result buffer; `out` port is only 4 lanes (see note)
     logic signed [15:0] softmax_out [0:15];
@@ -294,7 +302,15 @@ module fp8_softmax
         sum_1 = shifted_value_s6[0] + shifted_value_s6[1];
         sum_0 = shifted_value_s6[2] + shifted_value_s6[3];
         prelog_sum = sum_0 + sum_1;
-        sum_s7_pre = prelog_sum + (sum_s7 >>> (s6_updated_max - s6_old_max));
+        sub_s7 = s6_old_max - s6_updated_max;
+
+        s7_k = $signed(sub_s7[15:7]);
+        s7_idx = sub_s7[6:4];
+        s7_w = sub_s7[3:0];
+        s7_res = exp2_lut(s7_idx) + ((s7_w * $signed((exp2_lut(s7_idx+1)) - $signed(exp2_lut(s7_idx)))) >> W_BITS);
+        shifted_value_s7 = s7_res >>> (-s7_k);
+        int_sum_s7 = $signed((sum_s7 * shifted_value_s7)) >>> 10;
+        sum_s7_pre = $signed((prelog_sum)) + int_sum_s7;
         row_done = s7_curr_val_stored == 5'd16;
     end
 
@@ -311,7 +327,8 @@ module fp8_softmax
             if(softmax_clr) begin
                  s7_curr_val_stored <= 0; 
             end else begin
-                sum_s7 <= sum_s7_pre;
+                if(in_valid) sum_s7 <= sum_s7_pre;
+
                 if(in_valid) begin
                     s7_inc_max_cnt <= 1; // increase the counter for how many interations this needs to go through
                 end else begin
