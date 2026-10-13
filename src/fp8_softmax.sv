@@ -14,38 +14,38 @@ module fp8_softmax
 
     localparam int W_BITS = 4;
 
-    logic [15:0] max;
-    logic [3:0][15:0] ins_s2;
-    logic [3:0][15:0] ins_s3_sub;
-    logic [15:0] sub_val;
-    logic [15:0] sum_0, sum_1, prelog_sum;
+    logic signed [15:0] max;
+    logic signed [3:0][15:0] ins_s2;
+    logic signed [3:0][15:0] ins_s3_sub;
+    logic signed [15:0] sub_val;
+    logic signed [15:0] sum_0, sum_1, prelog_sum;
 
     logic [15:0] sum;
 
-    logic [15:0] updated_max, old_max;
+    logic signed [15:0] updated_max, old_max;
 
-    logic [15:0] updated_max_s2, old_max_s2;
-    logic [15:0] updated_max_s3, old_max_s3_p;
-    logic [15:0] updated_max_s4, old_max_s4_p;
-    logic [15:0] s5_updated_max, s5_old_max;
-    logic [15:0] s6_updated_max, s6_old_max;
+    logic signed [15:0] updated_max_s2, old_max_s2;
+    logic signed [15:0] updated_max_s3, old_max_s3_p;
+    logic signed [15:0] updated_max_s4, old_max_s4_p;
+    logic signed [15:0] s5_updated_max, s5_old_max;
+    logic signed [15:0] s6_updated_max, s6_old_max;
 
-    logic [3:0][15:0] sub_result_s3;
-    logic [15:0] old_max_s3, max_s3, sum_s3;
-    logic [15:0] old_max_s4, max_s4;
-    logic [3:0][3:0] idx_s4;
-    logic [3:0][3:0] w_s4;
-    logic [3:0][15:0] k_s4;
-    logic [3:0][15:0] ins_s5;
-    logic [3:0][15:0] results_s5, result_s5;
-    logic [3:0][15:0] shifted_value_s5;
-    logic [3:0][15:0] s5_k;
-    logic [15:0] sum_s4, sum_s5, sum_s6, sum_s7, sum_s7_pre;
-    logic [3:0][15:0] ins_s6;
-    logic [3:0][15:0] shifted_value_s6;
-    logic [3:0][15:0] ins_s7;
+    logic signed [3:0][15:0] sub_result_s3;
+    logic signed [15:0] old_max_s3, max_s3, sum_s3;
+    logic signed [15:0] old_max_s4, max_s4;
+    logic signed [3:0][3:0] idx_s4;
+    logic signed [3:0][3:0] w_s4;
+    logic signed [3:0][15:0] k_s4;
+    logic signed [3:0][15:0] ins_s5;
+    logic signed [3:0][15:0] results_s5, result_s5;
+    logic signed [3:0][15:0] shifted_value_s5;
+    logic signed [3:0][15:0] s5_k;
+    logic signed [15:0] sum_s4, sum_s5, sum_s6, sum_s7, sum_s7_pre;
+    logic signed [3:0][15:0] ins_s6;
+    logic signed [3:0][15:0] shifted_value_s6;
+    logic signed [3:0][15:0] ins_s7;
 
-    logic [3:0][15:0] ins_s3, ins_s4;
+    logic signed [3:0][15:0] ins_s3, ins_s4;
 
     logic valid_s2, valid_s3, valid_s4, valid_s5, valid_s6;
     logic in_valid;
@@ -53,37 +53,37 @@ module fp8_softmax
 
     logic [4:0] s7_curr_val_stored;
     logic s7_inc_max_cnt;
-    logic [15:0] s7_stored_values [0:15];
+    logic signed [15:0] s7_stored_values [0:15];
 
     logic s6_inc_max_cnt;
     logic [4:0] max_count_cnt;
 
     // S7 valid/max pipe signals
-    logic [15:0] s7_updated_max;
+    logic signed [15:0] s7_updated_max;
     logic s7_valid;
 
     // S8
-    logic [15:0] s8_stored_values [0:15];
-    logic [15:0] s8_sum;
-    logic [15:0] s8_updated_max;
+    logic signed [15:0] s8_stored_values [0:15];
+    logic signed [15:0] s8_sum;
+    logic signed [15:0] s8_updated_max;
     logic s8_valid;
 
     // log2 split (combinational)
-    logic [15:0] one_pos, f, f_frac;
+    logic signed [15:0] one_pos, f, f_frac;
     logic [3:0]  idx, w;
 
     // S9
     logic [3:0]  idx_s9, w_s9;
-    logic [15:0] one_pos_s9, updated_max_s9;
-    logic [15:0] stored_values_s9 [0:15];
+    logic signed [15:0] one_pos_s9, updated_max_s9;
+    logic signed [15:0] stored_values_s9 [0:15];
     logic valid_s9;
 
     // S10
-    logic [15:0] result_s10, one_pos_s10, updated_max_s10;
-    logic [15:0] stored_values_s10 [0:15];
+    logic signed [15:0] result_s10, one_pos_s10, updated_max_s10;
+    logic signed [15:0] stored_values_s10 [0:15];
     logic valid_s10;
 
-    logic [15:0] log_result, log_and_max;
+    logic signed [15:0] log_result, log_and_max;
 
     // full 16-entry result buffer; `out` port is only 4 lanes (see note)
     logic signed [15:0] softmax_out [0:15];
@@ -147,44 +147,39 @@ module fp8_softmax
                     .in_log_sum(in_log_sum),
                     .in_compute_max(in_compute_max),
                     .clr(softmax_clr));
-    logic [15:0] chunk_max, chunk_max_intermediate_1, chunk_max_intermediate_2;
+    logic signed [15:0] chunk_max, chunk_max_intermediate_1, chunk_max_intermediate_2;
 
     always_comb begin
         chunk_max_intermediate_1 = (ins[0] > ins[1]) ? ins[0] : ins[1];
         chunk_max_intermediate_2 = (ins[2] > ins[3]) ? ins[2] : ins[3];
         chunk_max = (chunk_max_intermediate_1 > chunk_max_intermediate_2) ? chunk_max_intermediate_1 : chunk_max_intermediate_2;
         old_max     = max;
-        if(in_first) begin
-            updated_max = chunk_max;
-        end else begin
-            updated_max = (max > chunk_max) ? max : chunk_max; //update max based on old max
-        end
+        updated_max = (max > chunk_max) ? max : chunk_max; //update max based on old max
     end
 
     always_ff @(posedge clk, negedge rst_n) begin
         if(!rst_n) begin
-            max <= '0;
-        end else if(in_compute_max) begin
-            max <= updated_max;
+            max <= 16'h8000;
+        end else begin
+            if(valid && compute_state) max <= updated_max;
         end
     end
 
     always_ff @(posedge clk, negedge rst_n) begin //S1 stage;
         if(!rst_n) begin
-            sum <= '0;
             for(int i = 0; i < 4;i++) begin
                 ins_s2[i] <= 0;
             end
             valid_s2 <= 0;
-            updated_max_s2 <= 0;
+            updated_max_s2 <= 16'h8000;
             old_max_s2 <= 0;
         end else begin
-           
-                if(!in_first) sum <= sum_s7;
-                ins_s2 <= ins;
-                valid_s2 <= valid;
-                updated_max_s2 <= updated_max;
-                old_max_s2 <= old_max;
+            for(int i = 0; i < 4; i++) begin
+                ins_s2[i] <= ins[i];
+            end
+            valid_s2 <= valid;
+            updated_max_s2 <= updated_max;
+            old_max_s2 <= old_max;
         end
     end
 
@@ -192,7 +187,6 @@ module fp8_softmax
         if(!rst_n) begin
             old_max_s3 <= 0;
             max_s3 <= 0;
-            sum_s3 <= 0;
             valid_s3 <= 0;
             updated_max_s3 <= 0;
             old_max_s3_p <= 0;
@@ -234,7 +228,7 @@ module fp8_softmax
                     for(int i = 0; i < 4; i++) begin
                         idx_s4[i] <= sub_result_s3[i][6:4];
                         w_s4[i]   <= sub_result_s3[i][3:0];
-                        k_s4[i]   <= sub_result_s3[i][15:7];
+                        k_s4[i]   <= $signed(sub_result_s3[i][15:7]);
                         ins_s4[i] <= ins_s3[i];
                  
                     valid_s4 <= valid_s3;
@@ -259,10 +253,9 @@ module fp8_softmax
                 s5_k[i] <= 0;
             end
         end else begin
-            
-                if(!in_first) sum_s5 <= sum_s4;
+                sum_s5 <= sum_s4;
                 for(int i = 0; i < 4; i++) begin
-                    result_s5[i] <= exp2_lut(idx_s4[i]) + ((w_s4[i]*(exp2_lut(idx_s4[i]+1) - exp2_lut(idx_s4[i]))) >> W_BITS); //maybe need to be a genvar
+                    result_s5[i] <= exp2_lut(idx_s4[i]) + ((w_s4[i]* $signed((exp2_lut(idx_s4[i]+1)) - $signed(exp2_lut(idx_s4[i])))) >> W_BITS); //maybe need to be a genvar
                     s5_k[i] <= k_s4[i];
                     ins_s5[i] <= ins_s4[i];
                 end
@@ -301,7 +294,7 @@ module fp8_softmax
         sum_1 = shifted_value_s6[0] + shifted_value_s6[1];
         sum_0 = shifted_value_s6[2] + shifted_value_s6[3];
         prelog_sum = sum_0 + sum_1;
-        sum_s7_pre = prelog_sum + (sum_s7 >> (s6_updated_max - s6_old_max));
+        sum_s7_pre = prelog_sum + (sum_s7 >>> (s6_updated_max - s6_old_max));
         row_done = s7_curr_val_stored == 5'd16;
     end
 
@@ -328,7 +321,7 @@ module fp8_softmax
                     s7_stored_values[s7_curr_val_stored + i] <= ins_s6[i];
                 end
                 s7_updated_max <= s6_updated_max; 
-                if(s7_curr_val_stored != 5'd16) s7_curr_val_stored <= s7_curr_val_stored + 4'd4;
+                if(s7_curr_val_stored != 5'd16) s7_curr_val_stored <= s7_curr_val_stored + 5'd4;
             end
             s7_valid <= row_done;
         end
@@ -370,7 +363,7 @@ module fp8_softmax
                 one_pos = i; //priority encoder for the MSB on
             end
         end
-
+        //It's alright
         f_frac = s8_sum >>> one_pos; // this is a hardware split
         idx = f_frac[6:4];   // top 3 bits -> which edge pair
         w   = f_frac[3:0];
