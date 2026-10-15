@@ -244,17 +244,18 @@ void Vtop___024root__trace_chg_0_sub_0(Vtop___024root* vlSelf, VerilatedVcd::Buf
     bufp->chgIData(oldp+248,(vlSelf->fp8_softmax__DOT__unnamedblk11__DOT__i),32);
     bufp->chgIData(oldp+249,(vlSelf->fp8_softmax__DOT__unnamedblk12__DOT__i),32);
     bufp->chgIData(oldp+250,(vlSelf->fp8_softmax__DOT__unnamedblk13__DOT__i),32);
-    bufp->chgIData(oldp+251,(vlSelf->fp8_softmax__DOT__unnamedblk14__DOT__j),32);
+    bufp->chgIData(oldp+251,(vlSelf->fp8_softmax__DOT__unnamedblk14__DOT__i),32);
     bufp->chgIData(oldp+252,(vlSelf->fp8_softmax__DOT__unnamedblk15__DOT__j),32);
-    bufp->chgIData(oldp+253,(vlSelf->fp8_softmax__DOT__unnamedblk16__DOT__i),32);
-    bufp->chgIData(oldp+254,(vlSelf->fp8_softmax__DOT__unnamedblk2__DOT__i),32);
-    bufp->chgIData(oldp+255,(vlSelf->fp8_softmax__DOT__unnamedblk3__DOT__i),32);
-    bufp->chgIData(oldp+256,(vlSelf->fp8_softmax__DOT__unnamedblk4__DOT__i),32);
-    bufp->chgIData(oldp+257,(vlSelf->fp8_softmax__DOT__unnamedblk5__DOT__i),32);
-    bufp->chgIData(oldp+258,(vlSelf->fp8_softmax__DOT__unnamedblk6__DOT__i),32);
-    bufp->chgIData(oldp+259,(vlSelf->fp8_softmax__DOT__unnamedblk7__DOT__i),32);
-    bufp->chgIData(oldp+260,(vlSelf->fp8_softmax__DOT__unnamedblk8__DOT__i),32);
-    bufp->chgIData(oldp+261,(vlSelf->fp8_softmax__DOT__unnamedblk9__DOT__i),32);
+    bufp->chgIData(oldp+253,(vlSelf->fp8_softmax__DOT__unnamedblk16__DOT__j),32);
+    bufp->chgIData(oldp+254,(vlSelf->fp8_softmax__DOT__unnamedblk17__DOT__i),32);
+    bufp->chgIData(oldp+255,(vlSelf->fp8_softmax__DOT__unnamedblk2__DOT__i),32);
+    bufp->chgIData(oldp+256,(vlSelf->fp8_softmax__DOT__unnamedblk3__DOT__i),32);
+    bufp->chgIData(oldp+257,(vlSelf->fp8_softmax__DOT__unnamedblk4__DOT__i),32);
+    bufp->chgIData(oldp+258,(vlSelf->fp8_softmax__DOT__unnamedblk5__DOT__i),32);
+    bufp->chgIData(oldp+259,(vlSelf->fp8_softmax__DOT__unnamedblk6__DOT__i),32);
+    bufp->chgIData(oldp+260,(vlSelf->fp8_softmax__DOT__unnamedblk7__DOT__i),32);
+    bufp->chgIData(oldp+261,(vlSelf->fp8_softmax__DOT__unnamedblk8__DOT__i),32);
+    bufp->chgIData(oldp+262,(vlSelf->fp8_softmax__DOT__unnamedblk9__DOT__i),32);
 }
 
 void Vtop___024root__trace_cleanup(void* voidSelf, VerilatedVcd* /*unused*/) {

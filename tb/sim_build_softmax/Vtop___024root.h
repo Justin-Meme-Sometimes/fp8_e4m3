@@ -180,9 +180,10 @@ class alignas(VL_CACHE_LINE_BYTES) Vtop___024root final : public VerilatedModule
         IData/*31:0*/ fp8_softmax__DOT__unnamedblk12__DOT__i;
         IData/*31:0*/ fp8_softmax__DOT__unnamedblk11__DOT__i;
         IData/*31:0*/ fp8_softmax__DOT__unnamedblk13__DOT__i;
+        IData/*31:0*/ fp8_softmax__DOT__unnamedblk14__DOT__i;
+        IData/*31:0*/ fp8_softmax__DOT__unnamedblk16__DOT__j;
         IData/*31:0*/ fp8_softmax__DOT__unnamedblk15__DOT__j;
-        IData/*31:0*/ fp8_softmax__DOT__unnamedblk14__DOT__j;
-        IData/*31:0*/ fp8_softmax__DOT__unnamedblk16__DOT__i;
+        IData/*31:0*/ fp8_softmax__DOT__unnamedblk17__DOT__i;
         IData/*31:0*/ __VactIterCount;
         VlUnpacked<SData/*15:0*/, 16> fp8_softmax__DOT__s7_stored_values;
         VlUnpacked<SData/*15:0*/, 16> fp8_softmax__DOT__s8_stored_values;

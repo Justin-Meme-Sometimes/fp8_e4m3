@@ -326,6 +326,7 @@ module fp8_softmax
         end else begin
             if(softmax_clr) begin
                  s7_curr_val_stored <= 0; 
+                 sum_s7 <= 0;
             end else begin
                 if(in_valid) sum_s7 <= sum_s7_pre;
 
@@ -334,13 +335,19 @@ module fp8_softmax
                 end else begin
                     s7_inc_max_cnt <= 0; //other wise we don't care
                 end
-                for(int i = 0; i < 4; i++) begin
-                    s7_stored_values[s7_curr_val_stored + i] <= ins_s6[i];
+                if(in_valid) begin
+                    for(int i = 0; i < 4; i++) begin
+                        s7_stored_values[s7_curr_val_stored + i] <= ins_s6[i];
+                    end
                 end
                 s7_updated_max <= s6_updated_max; 
                 if(s7_curr_val_stored != 5'd16) s7_curr_val_stored <= s7_curr_val_stored + 5'd4;
             end
-            s7_valid <= row_done;
+            if(in_valid && s7_curr_val_stored == 5'd16) begin 
+                s7_valid <= 1;
+            end else begin
+                s7_valid <= 0;
+            end
         end
     end
 
@@ -361,7 +368,9 @@ module fp8_softmax
             s8_valid <= 0;
         end else begin
             if(s7_valid) begin
-                s8_stored_values <= s7_stored_values;
+                for(int i = 0; i < 16; i++) begin
+                    s8_stored_values[i] <= s7_stored_values[i];
+                end
                 s8_sum <= sum_s7;
                 s8_updated_max <= s7_updated_max;
                 s8_valid <= s7_valid;

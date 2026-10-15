@@ -42,6 +42,7 @@ Vtop__Syms::Vtop__Syms(VerilatedContext* contextp, const char* namep, Vtop* mode
     __Vscope_fp8_softmax__unnamedblk14.configure(this, name(), "fp8_softmax.unnamedblk14", "unnamedblk14", -12, VerilatedScope::SCOPE_OTHER);
     __Vscope_fp8_softmax__unnamedblk15.configure(this, name(), "fp8_softmax.unnamedblk15", "unnamedblk15", -12, VerilatedScope::SCOPE_OTHER);
     __Vscope_fp8_softmax__unnamedblk16.configure(this, name(), "fp8_softmax.unnamedblk16", "unnamedblk16", -12, VerilatedScope::SCOPE_OTHER);
+    __Vscope_fp8_softmax__unnamedblk17.configure(this, name(), "fp8_softmax.unnamedblk17", "unnamedblk17", -12, VerilatedScope::SCOPE_OTHER);
     __Vscope_fp8_softmax__unnamedblk2.configure(this, name(), "fp8_softmax.unnamedblk2", "unnamedblk2", -12, VerilatedScope::SCOPE_OTHER);
     __Vscope_fp8_softmax__unnamedblk3.configure(this, name(), "fp8_softmax.unnamedblk3", "unnamedblk3", -12, VerilatedScope::SCOPE_OTHER);
     __Vscope_fp8_softmax__unnamedblk4.configure(this, name(), "fp8_softmax.unnamedblk4", "unnamedblk4", -12, VerilatedScope::SCOPE_OTHER);
@@ -206,9 +207,10 @@ Vtop__Syms::Vtop__Syms(VerilatedContext* contextp, const char* namep, Vtop* mode
         __Vscope_fp8_softmax__unnamedblk11.varInsert(__Vfinal,"i", &(TOP.fp8_softmax__DOT__unnamedblk11__DOT__i), false, VLVT_UINT32,VLVD_NODIR|VLVF_PUB_RW|VLVF_DPI_CLAY,1 ,31,0);
         __Vscope_fp8_softmax__unnamedblk12.varInsert(__Vfinal,"i", &(TOP.fp8_softmax__DOT__unnamedblk12__DOT__i), false, VLVT_UINT32,VLVD_NODIR|VLVF_PUB_RW|VLVF_DPI_CLAY,1 ,31,0);
         __Vscope_fp8_softmax__unnamedblk13.varInsert(__Vfinal,"i", &(TOP.fp8_softmax__DOT__unnamedblk13__DOT__i), false, VLVT_UINT32,VLVD_NODIR|VLVF_PUB_RW|VLVF_DPI_CLAY,1 ,31,0);
-        __Vscope_fp8_softmax__unnamedblk14.varInsert(__Vfinal,"j", &(TOP.fp8_softmax__DOT__unnamedblk14__DOT__j), false, VLVT_UINT32,VLVD_NODIR|VLVF_PUB_RW|VLVF_DPI_CLAY,1 ,31,0);
+        __Vscope_fp8_softmax__unnamedblk14.varInsert(__Vfinal,"i", &(TOP.fp8_softmax__DOT__unnamedblk14__DOT__i), false, VLVT_UINT32,VLVD_NODIR|VLVF_PUB_RW|VLVF_DPI_CLAY,1 ,31,0);
         __Vscope_fp8_softmax__unnamedblk15.varInsert(__Vfinal,"j", &(TOP.fp8_softmax__DOT__unnamedblk15__DOT__j), false, VLVT_UINT32,VLVD_NODIR|VLVF_PUB_RW|VLVF_DPI_CLAY,1 ,31,0);
-        __Vscope_fp8_softmax__unnamedblk16.varInsert(__Vfinal,"i", &(TOP.fp8_softmax__DOT__unnamedblk16__DOT__i), false, VLVT_UINT32,VLVD_NODIR|VLVF_PUB_RW|VLVF_DPI_CLAY,1 ,31,0);
+        __Vscope_fp8_softmax__unnamedblk16.varInsert(__Vfinal,"j", &(TOP.fp8_softmax__DOT__unnamedblk16__DOT__j), false, VLVT_UINT32,VLVD_NODIR|VLVF_PUB_RW|VLVF_DPI_CLAY,1 ,31,0);
+        __Vscope_fp8_softmax__unnamedblk17.varInsert(__Vfinal,"i", &(TOP.fp8_softmax__DOT__unnamedblk17__DOT__i), false, VLVT_UINT32,VLVD_NODIR|VLVF_PUB_RW|VLVF_DPI_CLAY,1 ,31,0);
         __Vscope_fp8_softmax__unnamedblk2.varInsert(__Vfinal,"i", &(TOP.fp8_softmax__DOT__unnamedblk2__DOT__i), false, VLVT_UINT32,VLVD_NODIR|VLVF_PUB_RW|VLVF_DPI_CLAY,1 ,31,0);
         __Vscope_fp8_softmax__unnamedblk3.varInsert(__Vfinal,"i", &(TOP.fp8_softmax__DOT__unnamedblk3__DOT__i), false, VLVT_UINT32,VLVD_NODIR|VLVF_PUB_RW|VLVF_DPI_CLAY,1 ,31,0);
         __Vscope_fp8_softmax__unnamedblk4.varInsert(__Vfinal,"i", &(TOP.fp8_softmax__DOT__unnamedblk4__DOT__i), false, VLVT_UINT32,VLVD_NODIR|VLVF_PUB_RW|VLVF_DPI_CLAY,1 ,31,0);

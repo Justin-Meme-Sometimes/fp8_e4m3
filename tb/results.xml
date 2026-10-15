@@ -1,8 +1,8 @@
 <testsuites name="results">
   <testsuite name="all" package="all">
-    <property name="random_seed" value="1791932324" />
-    <testcase name="softmax_stage_by_stage" classname="test_softmax_stages" file="/home/juiceboy/fp8_e4m3/tb/test_softmax_stages.py" lineno="239" time="0.06385064125061035" sim_time_ns="8795.001" ratio_time="137743.34646820682">
-      <failure message="Test failed with RANDOM_SEED=1791932324" />
+    <property name="random_seed" value="1791998307" />
+    <testcase name="softmax_stage_by_stage" classname="test_softmax_stages" file="/home/juiceboy/fp8_e4m3/tb/test_softmax_stages.py" lineno="239" time="0.06900191307067871" sim_time_ns="9895.001" ratio_time="143401.83568337507">
+      <failure message="Test failed with RANDOM_SEED=1791998307" />
     </testcase>
   </testsuite>
 </testsuites>
