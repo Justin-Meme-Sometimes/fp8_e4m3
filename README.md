@@ -94,12 +94,12 @@ The argmax is correct on every row. The probabilities sum to about 1.005 to 1.00
 | `fp8_mul` | 99 | 620.6 |
 | `bfloat16_add` | 823 | 4,917.2 |
 | `bfloat16_to_fp8_requant` | 36 | 214.0 |
-| `fp8_softmax` | 8,511 | 99,152.6 |
+| `fp8_softmax` | 6,878 | 71,117.0 |
 
-`fp8_softmax` has 2,166 flip-flops (most of them the 16x16-bit row buffer copied through the later stages) and a worst register-to-register path of about 16.7 ns at the typical corner (OpenSTA, 20 ns target, no wire load). It uses `return` in functions, which Yosys's built-in parser rejects, so synthesize it with the `slang` frontend:
+`fp8_softmax` has 1,396 flip-flops (256 of them are the 16x16-bit row buffer, which is kept in place and read by the later stages instead of being copied) and a worst register-to-register path of about 17.2 ns at the typical corner (OpenSTA, 20 ns target, no wire load). The file parses with Yosys's built-in frontend, so the same script as the other modules works:
 
 ```
-FRONTEND=slang synth/synth_sky130.sh fp8_softmax src/fp8_softmax.sv
+synth/synth_sky130.sh fp8_softmax src/fp8_softmax.sv
 ```
 
 ## AI Disclaimer
