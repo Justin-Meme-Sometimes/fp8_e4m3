@@ -64,7 +64,7 @@ module fp8_softmax
     logic s7_valid;
 
     // S8
-    logic signed [15:0] s8_stored_values [0:15];
+    //logic signed [15:0] s8_stored_values [0:15];
     logic signed [15:0] s8_sum;
     logic signed [15:0] s8_updated_max;
     logic s8_valid;
@@ -76,12 +76,12 @@ module fp8_softmax
     // S9
     logic signed [3:0]  idx_s9, w_s9;
     logic signed [15:0] one_pos_s9, updated_max_s9;
-    logic signed [15:0] stored_values_s9 [0:15];
+    //logic signed [15:0] stored_values_s9 [0:15];
     logic valid_s9;
 
     // S10
     logic signed [31:0] result_s10, one_pos_s10, updated_max_s10;
-    logic signed [15:0] stored_values_s10 [0:15];
+    //logic signed [15:0] stored_values_s10 [0:15];
     logic valid_s10;
 
     logic signed [15:0] log_result, log_and_max;
@@ -101,15 +101,15 @@ module fp8_softmax
         input logic [3:0] addr
     );
         case (addr)
-            4'd0: return 11'h000;  // f=1.000  log2=0.000000
-            4'd1: return 11'h0AE;  // f=1.125  log2=0.169925
-            4'd2: return 11'h14A;  // f=1.250  log2=0.321928
-            4'd3: return 11'h1D6;  // f=1.375  log2=0.459432
-            4'd4: return 11'h257;  // f=1.500  log2=0.584963
-            4'd5: return 11'h2CD;  // f=1.625  log2=0.700440
-            4'd6: return 11'h33B;  // f=1.750  log2=0.807355
-            4'd7: return 11'h3A1;  // f=1.875  log2=0.906891
-            4'd8: return 11'h400;  // f=2.000  log2=1.000000
+            4'd0: log2_lut = 11'h000;  // f=1.000  log2=0.000000
+            4'd1: log2_lut = 11'h0AE;  // f=1.125  log2=0.169925
+            4'd2: log2_lut = 11'h14A;  // f=1.250  log2=0.321928
+            4'd3: log2_lut = 11'h1D6;  // f=1.375  log2=0.459432
+            4'd4: log2_lut = 11'h257;  // f=1.500  log2=0.584963
+            4'd5: log2_lut = 11'h2CD;  // f=1.625  log2=0.700440
+            4'd6: log2_lut = 11'h33B;  // f=1.750  log2=0.807355
+            4'd7: log2_lut = 11'h3A1;  // f=1.875  log2=0.906891
+            4'd8: log2_lut = 11'h400;  // f=2.000  log2=1.000000
         endcase
     endfunction
 
@@ -117,15 +117,15 @@ module fp8_softmax
         input logic [3:0] addr
     );
         case (addr)
-            4'd0: return 13'h400;  // f=1.000  log2=0.000000
-            4'd1: return 13'h45D;  // f=1.125  log2=0.169925
-            4'd2: return 13'h4C2;  // f=1.250  log2=0.321928
-            4'd3: return 13'h530;  // f=1.375  log2=0.459432
-            4'd4: return 13'h5A8;  // f=1.500  log2=0.584963
-            4'd5: return 13'h62B;  // f=1.625  log2=0.700440
-            4'd6: return 13'h6BA;  // f=1.750  log2=0.807355
-            4'd7: return 13'h756;  // f=1.875  log2=0.906891
-            4'd8: return 13'h800;  // f=2.000  log2=1.000000
+            4'd0: exp2_lut = 13'h400;  // f=1.000  log2=0.000000
+            4'd1: exp2_lut = 13'h45D;  // f=1.125  log2=0.169925
+            4'd2: exp2_lut = 13'h4C2;  // f=1.250  log2=0.321928
+            4'd3: exp2_lut = 13'h530;  // f=1.375  log2=0.459432
+            4'd4: exp2_lut = 13'h5A8;  // f=1.500  log2=0.584963
+            4'd5: exp2_lut = 13'h62B;  // f=1.625  log2=0.700440
+            4'd6: exp2_lut = 13'h6BA;  // f=1.750  log2=0.807355
+            4'd7: exp2_lut = 13'h756;  // f=1.875  log2=0.906891
+            4'd8: exp2_lut = 13'h800;  // f=2.000  log2=1.000000
         endcase
     endfunction
 
@@ -133,13 +133,13 @@ module fp8_softmax
         input logic signed [17:0] x
     );
         if(x > 17'sd32767) begin
-            return 16'sd32767;
+            clamp = 16'sd32767;
         end
         else if(x < 16'sh8000) begin
-            return 16'sh8000;
+            clamp = 16'sh8000;
         end
         else begin
-            return x[15:0];
+            clamp = x[15:0];
         end
     endfunction
 
@@ -375,15 +375,15 @@ module fp8_softmax
 
     always_ff @(posedge clk, negedge rst_n) begin
         if(!rst_n) begin
-            s8_stored_values <= '{default: 0};
+            //for(int j = 0; j < 16; j++) s8_stored_values[j] <= 0;
             s8_sum <= 0;
             s8_updated_max <= 0;
             s8_valid <= 0;
         end else begin
             if(s7_valid) begin
-                for(int i = 0; i < 16; i++) begin
-                    s8_stored_values[i] <= s7_stored_values[i];
-                end
+                // for(int i = 0; i < 16; i++) begin
+                //     s8_stored_values[i] <= s7_stored_values[i];
+                // end
                 s8_sum <= sum_s7;
                 s8_updated_max <= s7_updated_max;  
             end
@@ -414,7 +414,7 @@ module fp8_softmax
             w_s9 <= 0;
             one_pos_s9 <= 0;
             updated_max_s9 <= 0;
-            stored_values_s9 <= '{default: 0};
+            //for(int j = 0; j < 16; j++) stored_values_s9[j] <= 0;
             valid_s9 <= 0;
         end else begin
             if(s8_valid) begin
@@ -422,7 +422,7 @@ module fp8_softmax
                 w_s9 <= w;
                 one_pos_s9 <= one_pos;
                 updated_max_s9 <= s8_updated_max;
-                stored_values_s9 <= s8_stored_values;   
+                //stored_values_s9 <= s8_stored_values;   
             end
             valid_s9 <= s8_valid;
         end
@@ -434,14 +434,14 @@ module fp8_softmax
             result_s10 <= 0;
             one_pos_s10 <= 0;
             updated_max_s10 <= 0;
-            stored_values_s10 <= '{default: 0};
+            //for(int j = 0; j < 16; j++) stored_values_s10[j] <= 0;
             valid_s10 <= 0;
         end else begin
             if(valid_s9) begin
                 result_s10 <= log2_lut(idx_s9) + (w_s9*($signed(log2_lut(idx_s9+1)) - $signed(log2_lut(idx_s9))) >> W_BITS);
                 one_pos_s10 <= one_pos_s9;
                 updated_max_s10 <= updated_max_s9;
-                stored_values_s10 <= stored_values_s9;
+                //stored_values_s10 <= stored_values_s9;
             end
             valid_s10 <= valid_s9;
         end
@@ -459,7 +459,7 @@ module fp8_softmax
             for(int j = 0; j < 16; j++) softmax_out[j] <= 0;
         end else begin
             if(valid_s10) begin
-                for(int j = 0; j < 16; j++) softmax_out[j] <= clamp(18'(stored_values_s10[j]) - 18'(log_and_max));
+                for(int j = 0; j < 16; j++) softmax_out[j] <= clamp(18'(s7_stored_values[j]) - 18'(log_and_max));
             end
         end
     end

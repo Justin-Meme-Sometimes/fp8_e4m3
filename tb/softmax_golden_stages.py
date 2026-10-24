@@ -35,7 +35,9 @@ ROW = 16
 def _parse_lut(func_name: str) -> list[int]:
     text = RTL_PATH.read_text()
     body = re.search(rf"function automatic[^;]*?{func_name}\(.*?endfunction", text, re.S).group(0)
-    entries = re.findall(r"4'd(\d+):\s*return\s*\d+'h([0-9A-Fa-f]+);", body)
+    # entries are `4'dN: <func_name> = W'hXXX;` (older revisions used `return W'hXXX;`)
+    entries = re.findall(rf"4'd(\d+):\s*(?:{func_name}\s*=|return)\s*\d+'h([0-9A-Fa-f]+);", body)
+    assert entries, f"no LUT entries found for {func_name}"
     lut = [0] * len(entries)
     for addr, val in entries:
         lut[int(addr)] = int(val, 16)
