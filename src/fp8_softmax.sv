@@ -139,6 +139,7 @@ module fp8_softmax
 
 
     logic done_computing, fsm_start, first, softmax_computing, softmax_clr;
+    
     //fsm starts once the softmax row is not full and we are in the compute_state with a valid input
 
     assign fsm_start = valid;
@@ -155,21 +156,23 @@ module fp8_softmax
                     .in_log_sum(in_log_sum),
                     .in_compute_max(in_compute_max),
                     .clr(softmax_clr));
-    logic signed [15:0] chunk_max, chunk_max_intermediate_1, chunk_max_intermediate_2;
+    logic signed [15:0] chunk_max, chunk_max_intermediate_1, chunk_max_intermediate_2, max_eff;
 
     always_comb begin
         chunk_max_intermediate_1 = (ins[0] > ins[1]) ? ins[0] : ins[1];
         chunk_max_intermediate_2 = (ins[2] > ins[3]) ? ins[2] : ins[3];
         chunk_max = (chunk_max_intermediate_1 > chunk_max_intermediate_2) ? chunk_max_intermediate_1 : chunk_max_intermediate_2;
-        old_max     = max;
-        updated_max = (max > chunk_max) ? max : chunk_max; //update max based on old max
+        max_eff     = softmax_clr ? 16'h8000 : max;
+        old_max     = max_eff;
+        updated_max = (max_eff > chunk_max) ? max_eff : chunk_max; //update max based on old max
     end
 
     always_ff @(posedge clk, negedge rst_n) begin
         if(!rst_n) begin
             max <= 16'h8000;
         end else begin
-            if(valid && compute_state) max <= updated_max;
+            if(softmax_clr) begin  max <= (valid && compute_state) ? updated_max : 16'h8000; end
+            else if(valid && compute_state) begin max <= updated_max; end
         end
     end
 
@@ -367,11 +370,9 @@ module fp8_softmax
                     s8_stored_values[i] <= s7_stored_values[i];
                 end
                 s8_sum <= sum_s7;
-                s8_updated_max <= s7_updated_max;
-                s8_valid <= s7_valid;
-            end else begin
-                s8_valid <= 0;
+                s8_updated_max <= s7_updated_max;  
             end
+            s8_valid <= s7_valid;
         end
     end
    
@@ -411,9 +412,9 @@ module fp8_softmax
                 w_s9 <= w;
                 one_pos_s9 <= one_pos;
                 updated_max_s9 <= s8_updated_max;
-                stored_values_s9 <= s8_stored_values;
-                valid_s9 <= s8_valid;
+                stored_values_s9 <= s8_stored_values;   
             end
+            valid_s9 <= s8_valid;
         end
     end
 
@@ -431,8 +432,8 @@ module fp8_softmax
                 one_pos_s10 <= one_pos_s9;
                 updated_max_s10 <= updated_max_s9;
                 stored_values_s10 <= stored_values_s9;
-                valid_s10 <= valid_s9;
             end
+            valid_s10 <= valid_s9;
         end
     end
     logic signed [15:0] frac_q7;

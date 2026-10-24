@@ -107,6 +107,7 @@ Vtop__Syms::Vtop__Syms(VerilatedContext* contextp, const char* namep, Vtop* mode
         __Vscope_fp8_softmax.varInsert(__Vfinal,"max", &(TOP.fp8_softmax__DOT__max), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"max_cnt", &(TOP.fp8_softmax__DOT__max_cnt), false, VLVT_UINT8,VLVD_NODIR|VLVF_PUB_RW,1 ,3,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"max_count_cnt", &(TOP.fp8_softmax__DOT__max_count_cnt), false, VLVT_UINT8,VLVD_NODIR|VLVF_PUB_RW,1 ,4,0);
+        __Vscope_fp8_softmax.varInsert(__Vfinal,"max_eff", &(TOP.fp8_softmax__DOT__max_eff), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"max_s3", &(TOP.fp8_softmax__DOT__max_s3), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"max_s4", &(TOP.fp8_softmax__DOT__max_s4), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"old_max", &(TOP.fp8_softmax__DOT__old_max), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);

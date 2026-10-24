@@ -126,7 +126,6 @@ VL_ATTR_COLD void Vtop___024root___stl_sequent__TOP__0(Vtop___024root* vlSelf) {
     vlSelf->fp8_softmax__DOT__con = vlSelf->con;
     vlSelf->fp8_softmax__DOT__clr = vlSelf->clr;
     vlSelf->fp8_softmax__DOT__valid = vlSelf->valid;
-    vlSelf->fp8_softmax__DOT__old_max = vlSelf->fp8_softmax__DOT__max;
     vlSelf->fp8_softmax__DOT__fsm__DOT__done_log_sum 
         = vlSelf->fp8_softmax__DOT__out_valid;
     vlSelf->out_valid = vlSelf->fp8_softmax__DOT__out_valid;
@@ -357,33 +356,10 @@ VL_ATTR_COLD void Vtop___024root___stl_sequent__TOP__0(Vtop___024root* vlSelf) {
     vlSelf->fp8_softmax__DOT__idx = (7U & ((IData)(vlSelf->fp8_softmax__DOT__f_frac) 
                                            >> 4U));
     vlSelf->fp8_softmax__DOT__w = (0xfU & (IData)(vlSelf->fp8_softmax__DOT__f_frac));
-    vlSelf->fp8_softmax__DOT__fsm__DOT__clr = 0U;
-    vlSelf->fp8_softmax__DOT__chunk_max_intermediate_1 
-        = (0xffffU & (VL_GTS_III(16, (0xffffU & (IData)(vlSelf->ins)), 
-                                 (0xffffU & (IData)(
-                                                    (vlSelf->ins 
-                                                     >> 0x10U))))
-                       ? (IData)(vlSelf->ins) : (IData)(
-                                                        (vlSelf->ins 
-                                                         >> 0x10U))));
-    vlSelf->fp8_softmax__DOT__chunk_max_intermediate_2 
-        = (0xffffU & (VL_GTS_III(16, (0xffffU & (IData)(
-                                                        (vlSelf->ins 
-                                                         >> 0x20U))), 
-                                 (0xffffU & (IData)(
-                                                    (vlSelf->ins 
-                                                     >> 0x30U))))
-                       ? (IData)((vlSelf->ins >> 0x20U))
-                       : (IData)((vlSelf->ins >> 0x30U))));
-    vlSelf->fp8_softmax__DOT__chunk_max = (VL_GTS_III(16, (IData)(vlSelf->fp8_softmax__DOT__chunk_max_intermediate_1), (IData)(vlSelf->fp8_softmax__DOT__chunk_max_intermediate_2))
-                                            ? (IData)(vlSelf->fp8_softmax__DOT__chunk_max_intermediate_1)
-                                            : (IData)(vlSelf->fp8_softmax__DOT__chunk_max_intermediate_2));
-    vlSelf->fp8_softmax__DOT__updated_max = (VL_GTS_III(16, (IData)(vlSelf->fp8_softmax__DOT__max), (IData)(vlSelf->fp8_softmax__DOT__chunk_max))
-                                              ? (IData)(vlSelf->fp8_softmax__DOT__max)
-                                              : (IData)(vlSelf->fp8_softmax__DOT__chunk_max));
     vlSelf->fp8_softmax__DOT__fsm_start = vlSelf->valid;
     vlSelf->fp8_softmax__DOT__done_find_max = (0x10U 
                                                == (IData)(vlSelf->fp8_softmax__DOT__s7_curr_val_stored));
+    vlSelf->fp8_softmax__DOT__fsm__DOT__clr = 0U;
     vlSelf->fp8_softmax__DOT__sum_1 = (0xffffU & ((IData)(vlSelf->fp8_softmax__DOT__shifted_value_s6) 
                                                   + (IData)(
                                                             (vlSelf->fp8_softmax__DOT__shifted_value_s6 
@@ -651,7 +627,6 @@ VL_ATTR_COLD void Vtop___024root___stl_sequent__TOP__0(Vtop___024root* vlSelf) {
     vlSelf->fp8_softmax__DOT__max_count_fsm__DOT__rst_n 
         = vlSelf->fp8_softmax__DOT__rst_n;
     vlSelf->fp8_softmax__DOT__fsm__DOT__rst_n = vlSelf->fp8_softmax__DOT__rst_n;
-    vlSelf->fp8_softmax__DOT__softmax_clr = vlSelf->fp8_softmax__DOT__fsm__DOT__clr;
     vlSelf->fp8_softmax__DOT__fsm__DOT__start = vlSelf->fp8_softmax__DOT__fsm_start;
     vlSelf->fp8_softmax__DOT__fsm__DOT__done_find_max 
         = vlSelf->fp8_softmax__DOT__done_find_max;
@@ -680,9 +655,37 @@ VL_ATTR_COLD void Vtop___024root___stl_sequent__TOP__0(Vtop___024root* vlSelf) {
             }
         }
     }
+    vlSelf->fp8_softmax__DOT__softmax_clr = vlSelf->fp8_softmax__DOT__fsm__DOT__clr;
+    vlSelf->fp8_softmax__DOT__in_compute_max = vlSelf->fp8_softmax__DOT__fsm__DOT__in_compute_max;
     vlSelf->fp8_softmax__DOT__max_count_fsm__DOT__clr 
         = vlSelf->fp8_softmax__DOT__softmax_clr;
-    vlSelf->fp8_softmax__DOT__in_compute_max = vlSelf->fp8_softmax__DOT__fsm__DOT__in_compute_max;
+    vlSelf->fp8_softmax__DOT__chunk_max_intermediate_1 
+        = (0xffffU & (VL_GTS_III(16, (0xffffU & (IData)(vlSelf->ins)), 
+                                 (0xffffU & (IData)(
+                                                    (vlSelf->ins 
+                                                     >> 0x10U))))
+                       ? (IData)(vlSelf->ins) : (IData)(
+                                                        (vlSelf->ins 
+                                                         >> 0x10U))));
+    vlSelf->fp8_softmax__DOT__chunk_max_intermediate_2 
+        = (0xffffU & (VL_GTS_III(16, (0xffffU & (IData)(
+                                                        (vlSelf->ins 
+                                                         >> 0x20U))), 
+                                 (0xffffU & (IData)(
+                                                    (vlSelf->ins 
+                                                     >> 0x30U))))
+                       ? (IData)((vlSelf->ins >> 0x20U))
+                       : (IData)((vlSelf->ins >> 0x30U))));
+    vlSelf->fp8_softmax__DOT__chunk_max = (VL_GTS_III(16, (IData)(vlSelf->fp8_softmax__DOT__chunk_max_intermediate_1), (IData)(vlSelf->fp8_softmax__DOT__chunk_max_intermediate_2))
+                                            ? (IData)(vlSelf->fp8_softmax__DOT__chunk_max_intermediate_1)
+                                            : (IData)(vlSelf->fp8_softmax__DOT__chunk_max_intermediate_2));
+    vlSelf->fp8_softmax__DOT__max_eff = ((IData)(vlSelf->fp8_softmax__DOT__softmax_clr)
+                                          ? 0x8000U
+                                          : (IData)(vlSelf->fp8_softmax__DOT__max));
+    vlSelf->fp8_softmax__DOT__old_max = vlSelf->fp8_softmax__DOT__max_eff;
+    vlSelf->fp8_softmax__DOT__updated_max = (VL_GTS_III(16, (IData)(vlSelf->fp8_softmax__DOT__max_eff), (IData)(vlSelf->fp8_softmax__DOT__chunk_max))
+                                              ? (IData)(vlSelf->fp8_softmax__DOT__max_eff)
+                                              : (IData)(vlSelf->fp8_softmax__DOT__chunk_max));
 }
 
 VL_ATTR_COLD void Vtop___024root___eval_stl(Vtop___024root* vlSelf) {
@@ -896,6 +899,7 @@ VL_ATTR_COLD void Vtop___024root___ctor_var_reset(Vtop___024root* vlSelf) {
     vlSelf->fp8_softmax__DOT__chunk_max = VL_RAND_RESET_I(16);
     vlSelf->fp8_softmax__DOT__chunk_max_intermediate_1 = VL_RAND_RESET_I(16);
     vlSelf->fp8_softmax__DOT__chunk_max_intermediate_2 = VL_RAND_RESET_I(16);
+    vlSelf->fp8_softmax__DOT__max_eff = VL_RAND_RESET_I(16);
     vlSelf->fp8_softmax__DOT__frac_q7 = VL_RAND_RESET_I(16);
     vlSelf->fp8_softmax__DOT__unnamedblk2__DOT__i = 0;
     vlSelf->fp8_softmax__DOT__unnamedblk1__DOT__i = 0;

@@ -158,6 +158,7 @@ class alignas(VL_CACHE_LINE_BYTES) Vtop___024root final : public VerilatedModule
         SData/*15:0*/ fp8_softmax__DOT__chunk_max;
         SData/*15:0*/ fp8_softmax__DOT__chunk_max_intermediate_1;
         SData/*15:0*/ fp8_softmax__DOT__chunk_max_intermediate_2;
+        SData/*15:0*/ fp8_softmax__DOT__max_eff;
         SData/*15:0*/ fp8_softmax__DOT__frac_q7;
         SData/*10:0*/ __Vfunc_fp8_softmax__DOT__exp2_lut__3__Vfuncout;
         SData/*10:0*/ __Vfunc_fp8_softmax__DOT__exp2_lut__4__Vfuncout;

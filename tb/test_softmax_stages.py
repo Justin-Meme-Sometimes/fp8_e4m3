@@ -23,7 +23,7 @@ from softmax_golden_stages import Q_IN, SCALE_IN, W_BITS, RowTrace, log2_frac_q1
 
 SEARCH = 3
 TIMEOUT_CYCLES = 200
-NUM_RANDOM_ROWS = 50
+NUM_RANDOM_ROWS = 215
 RANDOM_RANGE = 6.0
 RESET_EACH_ROW = os.environ.get("SOFTMAX_RESET_EACH_ROW", "1") == "1"
 
