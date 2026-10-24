@@ -19,7 +19,7 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import FallingEdge
 
-from softmax_golden_stages import RowTrace, trace_row, wrap16
+from softmax_golden_stages import Q_IN, SCALE_IN, W_BITS, RowTrace, log2_frac_q10, trace_row, wrap16
 
 SEARCH = 3
 TIMEOUT_CYCLES = 200
@@ -195,6 +195,8 @@ async def run_row(dut, row_idx: int, trace: RowTrace) -> list[Result]:
                 results.append(Result(row_idx, st, c, ok, got, exp, note))
         else:
             exp = st.golden(trace, 0)
+            if st.name.startswith(("S9", "S10 log2 frac")):
+                exp = s9_expected_from_hw_sum(st, trace, log, exp)
             n = next((i for i, s in enumerate(log) if s[st.valid]), None)
             if n is None:
                 results.append(Result(row_idx, st, None, False, [None] * st.lanes, exp, f"{st.valid} never asserted"))
@@ -212,6 +214,28 @@ async def run_row(dut, row_idx: int, trace: RowTrace) -> list[Result]:
     if timed_out:
         results.append(Result(row_idx, STAGES[-1], None, False, [], [], f"TIMEOUT: out_valid never asserted in {TIMEOUT_CYCLES} cycles"))
     return results
+
+
+def s9_expected_from_hw_sum(st, trace, log, default):
+    """S9/S10 split the sum into (one_pos, idx, w) and look up log2 of the fraction. Near a power of two a 1-LSB
+    sum error flips one_pos, so derive the expected split from the RTL's own
+    s8_sum, but only if that sum is within the S8 tolerance of the golden."""
+    s8 = next(x for x in STAGES if x.signal == "s8_sum")
+    n8 = next((i for i, s in enumerate(log) if s[s8.valid]), None)
+    if n8 is None:
+        return default
+    hw_sum = read_stage(log[n8], s8)[0]
+    if abs(hw_sum - trace.sum_q10) > s8.tol:
+        return default
+    s_int = max(1, hw_sum)
+    one_pos = s_int.bit_length() - 1
+    mant7 = ((s_int << Q_IN) >> one_pos) & (SCALE_IN - 1)
+    return {
+        "one_pos_s9": [one_pos],
+        "idx_s9": [mant7 >> W_BITS],
+        "w_s9": [mant7 & ((1 << W_BITS) - 1)],
+        "result_s10": [log2_frac_q10(mant7 >> W_BITS, mant7 & ((1 << W_BITS) - 1))],
+    }.get(st.signal, default)
 
 
 def fmt(v):

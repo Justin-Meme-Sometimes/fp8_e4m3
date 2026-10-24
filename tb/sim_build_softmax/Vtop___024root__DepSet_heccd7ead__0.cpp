@@ -180,60 +180,68 @@ VL_INLINE_OPT void Vtop___024root___ico_sequent__TOP__0(Vtop___024root* vlSelf) 
                                             << 0x10U));
     vlSelf->fp8_softmax__DOT__s6_inc_max_cnt = vlSelf->fp8_softmax__DOT__s7_inc_max_cnt;
     vlSelf->fp8_softmax__DOT__fsm__DOT__in_log_sum = 0U;
-    vlSelf->fp8_softmax__DOT__log_result = (0xffffU 
-                                            & ((IData)(vlSelf->fp8_softmax__DOT__one_pos_s10) 
-                                               + (IData)(vlSelf->fp8_softmax__DOT__result_s10)));
+    vlSelf->fp8_softmax__DOT__frac_q7 = (0xffffU & 
+                                         VL_EXTENDS_II(16,8, 
+                                                       (0x7fU 
+                                                        & (vlSelf->fp8_softmax__DOT__result_s10 
+                                                           >> 3U))));
     vlSelf->fp8_softmax__DOT__clk = vlSelf->clk;
     vlSelf->fp8_softmax__DOT__rst_n = vlSelf->rst_n;
     vlSelf->fp8_softmax__DOT__one_pos = 0U;
     vlSelf->fp8_softmax__DOT__idx = 0U;
     vlSelf->fp8_softmax__DOT__w = 0U;
-    if ((0x8000U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 0xfU;
-    }
-    if ((0x4000U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 0xeU;
-    }
-    if ((0x2000U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 0xdU;
-    }
-    if ((0x1000U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 0xcU;
-    }
-    if ((0x800U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 0xbU;
-    }
-    if ((0x400U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 0xaU;
-    }
-    if ((0x200U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 9U;
-    }
-    if ((0x100U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 8U;
-    }
-    if ((0x80U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 7U;
-    }
-    if ((0x40U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 6U;
-    }
-    if ((0x20U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 5U;
-    }
-    if ((0x10U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 4U;
-    }
-    if ((8U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 3U;
-    }
-    if ((4U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 2U;
+    if ((1U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 0U;
     }
     if ((2U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
         vlSelf->fp8_softmax__DOT__one_pos = 1U;
     }
-    vlSelf->fp8_softmax__DOT__f_frac = (0xffffU & VL_SHIFTRS_III(16,16,16, (IData)(vlSelf->fp8_softmax__DOT__s8_sum), (IData)(vlSelf->fp8_softmax__DOT__one_pos)));
+    if ((4U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 2U;
+    }
+    if ((8U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 3U;
+    }
+    if ((0x10U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 4U;
+    }
+    if ((0x20U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 5U;
+    }
+    if ((0x40U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 6U;
+    }
+    if ((0x80U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 7U;
+    }
+    if ((0x100U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 8U;
+    }
+    if ((0x200U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 9U;
+    }
+    if ((0x400U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 0xaU;
+    }
+    if ((0x800U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 0xbU;
+    }
+    if ((0x1000U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 0xcU;
+    }
+    if ((0x2000U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 0xdU;
+    }
+    if ((0x4000U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 0xeU;
+    }
+    if ((0x8000U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 0xfU;
+    }
+    vlSelf->fp8_softmax__DOT__f_frac = (0xffffU & VL_SHIFTR_III(24,24,16, 
+                                                                (0xffffffU 
+                                                                 & VL_SHIFTL_III(24,24,32, 
+                                                                                VL_EXTENDS_II(24,16, (IData)(vlSelf->fp8_softmax__DOT__s8_sum)), 7U)), (IData)(vlSelf->fp8_softmax__DOT__one_pos)));
     vlSelf->fp8_softmax__DOT__idx = (7U & ((IData)(vlSelf->fp8_softmax__DOT__f_frac) 
                                            >> 4U));
     vlSelf->fp8_softmax__DOT__w = (0xfU & (IData)(vlSelf->fp8_softmax__DOT__f_frac));
@@ -519,8 +527,12 @@ VL_INLINE_OPT void Vtop___024root___ico_sequent__TOP__0(Vtop___024root* vlSelf) 
         = vlSelf->fp8_softmax__DOT__s6_inc_max_cnt;
     vlSelf->fp8_softmax__DOT__in_log_sum = vlSelf->fp8_softmax__DOT__fsm__DOT__in_log_sum;
     vlSelf->fp8_softmax__DOT__log_and_max = (0xffffU 
-                                             & ((IData)(vlSelf->fp8_softmax__DOT__log_result) 
-                                                + (IData)(vlSelf->fp8_softmax__DOT__max)));
+                                             & (VL_SHIFTL_III(16,16,32, 
+                                                              (vlSelf->fp8_softmax__DOT__one_pos_s10 
+                                                               - (IData)(0xaU)), 7U) 
+                                                + (
+                                                   VL_EXTENDS_II(16,16, (IData)(vlSelf->fp8_softmax__DOT__frac_q7)) 
+                                                   + vlSelf->fp8_softmax__DOT__updated_max_s10)));
     vlSelf->fp8_softmax__DOT__max_count_fsm__DOT__clk 
         = vlSelf->fp8_softmax__DOT__clk;
     vlSelf->fp8_softmax__DOT__fsm__DOT__clk = vlSelf->fp8_softmax__DOT__clk;
@@ -611,15 +623,15 @@ VL_INLINE_OPT void Vtop___024root___nba_sequent__TOP__0(Vtop___024root* vlSelf) 
     __Vfunc_fp8_softmax__DOT__exp2_lut__2__Vfuncout = 0;
     CData/*3:0*/ __Vfunc_fp8_softmax__DOT__exp2_lut__2__addr;
     __Vfunc_fp8_softmax__DOT__exp2_lut__2__addr = 0;
-    SData/*9:0*/ __Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout;
+    SData/*10:0*/ __Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout;
     __Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout = 0;
     CData/*3:0*/ __Vfunc_fp8_softmax__DOT__log2_lut__6__addr;
     __Vfunc_fp8_softmax__DOT__log2_lut__6__addr = 0;
-    SData/*9:0*/ __Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout;
+    SData/*10:0*/ __Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout;
     __Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout = 0;
     CData/*3:0*/ __Vfunc_fp8_softmax__DOT__log2_lut__7__addr;
     __Vfunc_fp8_softmax__DOT__log2_lut__7__addr = 0;
-    SData/*9:0*/ __Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout;
+    SData/*10:0*/ __Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout;
     __Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout = 0;
     CData/*3:0*/ __Vfunc_fp8_softmax__DOT__log2_lut__8__addr;
     __Vfunc_fp8_softmax__DOT__log2_lut__8__addr = 0;
@@ -1374,10 +1386,6 @@ VL_INLINE_OPT void Vtop___024root___nba_sequent__TOP__0(Vtop___024root* vlSelf) 
     if (vlSelf->rst_n) {
         vlSelf->fp8_softmax__DOT__sum_s6 = vlSelf->fp8_softmax__DOT__sum_s5;
         vlSelf->fp8_softmax__DOT__s6_old_max = vlSelf->fp8_softmax__DOT__s5_old_max;
-        if (vlSelf->fp8_softmax__DOT__s8_valid) {
-            vlSelf->fp8_softmax__DOT__w_s9 = vlSelf->fp8_softmax__DOT__w;
-            vlSelf->fp8_softmax__DOT__idx_s9 = vlSelf->fp8_softmax__DOT__idx;
-        }
         if (vlSelf->fp8_softmax__DOT__s7_valid) {
             vlSelf->fp8_softmax__DOT__s8_sum = vlSelf->fp8_softmax__DOT__sum_s7;
         }
@@ -1432,8 +1440,6 @@ VL_INLINE_OPT void Vtop___024root___nba_sequent__TOP__0(Vtop___024root* vlSelf) 
     } else {
         vlSelf->fp8_softmax__DOT__sum_s6 = 0U;
         vlSelf->fp8_softmax__DOT__s6_old_max = 0U;
-        vlSelf->fp8_softmax__DOT__w_s9 = 0U;
-        vlSelf->fp8_softmax__DOT__idx_s9 = 0U;
         vlSelf->fp8_softmax__DOT__s8_sum = 0U;
         vlSelf->fp8_softmax__DOT__shifted_value_s6 = 0ULL;
         vlSelf->fp8_softmax__DOT__sum_s7 = 0U;
@@ -1441,218 +1447,204 @@ VL_INLINE_OPT void Vtop___024root___nba_sequent__TOP__0(Vtop___024root* vlSelf) 
     if (vlSelf->rst_n) {
         if (vlSelf->fp8_softmax__DOT__valid_s9) {
             vlSelf->fp8_softmax__DOT__result_s10 = 
-                (0xffffU & (VL_EXTEND_II(16,10, ([&]() {
-                                __Vfunc_fp8_softmax__DOT__log2_lut__6__addr 
-                                    = vlSelf->fp8_softmax__DOT__idx;
-                                {
-                                    if (((((((((0U 
-                                                == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr)) 
-                                               | (1U 
-                                                  == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) 
-                                              | (2U 
-                                                 == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) 
-                                             | (3U 
-                                                == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) 
-                                            | (4U == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) 
-                                           | (5U == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) 
-                                          | (6U == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) 
-                                         | (7U == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr)))) {
-                                        if ((0U == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) {
-                                            __Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout = 0U;
-                                            goto __Vlabel4;
-                                        } else if (
-                                                   (1U 
-                                                    == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) {
-                                            __Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout = 0xaeU;
-                                            goto __Vlabel4;
-                                        } else if (
-                                                   (2U 
-                                                    == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) {
-                                            __Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout = 0x14aU;
-                                            goto __Vlabel4;
-                                        } else if (
-                                                   (3U 
-                                                    == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) {
-                                            __Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout = 0x1d6U;
-                                            goto __Vlabel4;
-                                        } else if (
-                                                   (4U 
-                                                    == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) {
-                                            __Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout = 0x257U;
-                                            goto __Vlabel4;
-                                        } else if (
-                                                   (5U 
-                                                    == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) {
-                                            __Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout = 0x2cdU;
-                                            goto __Vlabel4;
-                                        } else if (
-                                                   (6U 
-                                                    == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) {
-                                            __Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout = 0x33bU;
-                                            goto __Vlabel4;
-                                        } else {
-                                            __Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout = 0x3a1U;
-                                            goto __Vlabel4;
-                                        }
-                                    } else if ((8U 
-                                                == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) {
+                (VL_EXTEND_II(32,11, ([&]() {
+                            __Vfunc_fp8_softmax__DOT__log2_lut__6__addr 
+                                = vlSelf->fp8_softmax__DOT__idx_s9;
+                            {
+                                if (((((((((0U == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr)) 
+                                           | (1U == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) 
+                                          | (2U == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) 
+                                         | (3U == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) 
+                                        | (4U == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) 
+                                       | (5U == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) 
+                                      | (6U == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) 
+                                     | (7U == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr)))) {
+                                    if ((0U == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) {
                                         __Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout = 0U;
                                         goto __Vlabel4;
+                                    } else if ((1U 
+                                                == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) {
+                                        __Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout = 0xaeU;
+                                        goto __Vlabel4;
+                                    } else if ((2U 
+                                                == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) {
+                                        __Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout = 0x14aU;
+                                        goto __Vlabel4;
+                                    } else if ((3U 
+                                                == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) {
+                                        __Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout = 0x1d6U;
+                                        goto __Vlabel4;
+                                    } else if ((4U 
+                                                == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) {
+                                        __Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout = 0x257U;
+                                        goto __Vlabel4;
+                                    } else if ((5U 
+                                                == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) {
+                                        __Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout = 0x2cdU;
+                                        goto __Vlabel4;
+                                    } else if ((6U 
+                                                == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) {
+                                        __Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout = 0x33bU;
+                                        goto __Vlabel4;
+                                    } else {
+                                        __Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout = 0x3a1U;
+                                        goto __Vlabel4;
                                     }
-                                    __Vlabel4: ;
+                                } else if ((8U == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__addr))) {
+                                    __Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout = 0x400U;
+                                    goto __Vlabel4;
                                 }
-                            }(), (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout))) 
-                            + VL_SHIFTR_III(16,16,32, 
-                                            (0xffffU 
-                                             & ((IData)(vlSelf->fp8_softmax__DOT__w) 
-                                                * (0xffffU 
-                                                   & (VL_EXTEND_II(16,10, 
-                                                                   ([&]() {
-                                                    __Vfunc_fp8_softmax__DOT__log2_lut__7__addr 
-                                                        = 
-                                                        (0xfU 
-                                                         & ((IData)(1U) 
-                                                            + (IData)(vlSelf->fp8_softmax__DOT__idx)));
-                                                    {
-                                                        if (
-                                                            ((((((((0U 
-                                                                    == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr)) 
-                                                                   | (1U 
-                                                                      == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) 
-                                                                  | (2U 
-                                                                     == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) 
-                                                                 | (3U 
-                                                                    == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) 
-                                                                | (4U 
-                                                                   == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) 
-                                                               | (5U 
-                                                                  == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) 
-                                                              | (6U 
-                                                                 == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) 
-                                                             | (7U 
-                                                                == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr)))) {
-                                                            if (
-                                                                (0U 
-                                                                 == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) {
-                                                                __Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout = 0U;
-                                                                goto __Vlabel5;
-                                                            } else if (
-                                                                       (1U 
-                                                                        == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) {
-                                                                __Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout = 0xaeU;
-                                                                goto __Vlabel5;
-                                                            } else if (
-                                                                       (2U 
-                                                                        == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) {
-                                                                __Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout = 0x14aU;
-                                                                goto __Vlabel5;
-                                                            } else if (
-                                                                       (3U 
-                                                                        == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) {
-                                                                __Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout = 0x1d6U;
-                                                                goto __Vlabel5;
-                                                            } else if (
-                                                                       (4U 
-                                                                        == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) {
-                                                                __Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout = 0x257U;
-                                                                goto __Vlabel5;
-                                                            } else if (
-                                                                       (5U 
-                                                                        == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) {
-                                                                __Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout = 0x2cdU;
-                                                                goto __Vlabel5;
-                                                            } else if (
-                                                                       (6U 
-                                                                        == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) {
-                                                                __Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout = 0x33bU;
-                                                                goto __Vlabel5;
-                                                            } else {
-                                                                __Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout = 0x3a1U;
-                                                                goto __Vlabel5;
-                                                            }
-                                                        } else if (
-                                                                   (8U 
-                                                                    == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) {
-                                                            __Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout = 0U;
-                                                            goto __Vlabel5;
-                                                        }
-                                                        __Vlabel5: ;
-                                                    }
-                                                }(), (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout))) 
-                                                      - 
-                                                      VL_EXTEND_II(16,10, 
-                                                                   ([&]() {
-                                                    __Vfunc_fp8_softmax__DOT__log2_lut__8__addr 
-                                                        = vlSelf->fp8_softmax__DOT__idx;
-                                                    {
-                                                        if (
-                                                            ((((((((0U 
-                                                                    == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr)) 
-                                                                   | (1U 
-                                                                      == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) 
-                                                                  | (2U 
-                                                                     == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) 
-                                                                 | (3U 
-                                                                    == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) 
-                                                                | (4U 
-                                                                   == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) 
-                                                               | (5U 
-                                                                  == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) 
-                                                              | (6U 
-                                                                 == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) 
-                                                             | (7U 
-                                                                == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr)))) {
-                                                            if (
-                                                                (0U 
-                                                                 == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) {
-                                                                __Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout = 0U;
-                                                                goto __Vlabel6;
-                                                            } else if (
-                                                                       (1U 
-                                                                        == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) {
-                                                                __Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout = 0xaeU;
-                                                                goto __Vlabel6;
-                                                            } else if (
-                                                                       (2U 
-                                                                        == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) {
-                                                                __Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout = 0x14aU;
-                                                                goto __Vlabel6;
-                                                            } else if (
-                                                                       (3U 
-                                                                        == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) {
-                                                                __Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout = 0x1d6U;
-                                                                goto __Vlabel6;
-                                                            } else if (
-                                                                       (4U 
-                                                                        == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) {
-                                                                __Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout = 0x257U;
-                                                                goto __Vlabel6;
-                                                            } else if (
-                                                                       (5U 
-                                                                        == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) {
-                                                                __Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout = 0x2cdU;
-                                                                goto __Vlabel6;
-                                                            } else if (
-                                                                       (6U 
-                                                                        == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) {
-                                                                __Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout = 0x33bU;
-                                                                goto __Vlabel6;
-                                                            } else {
-                                                                __Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout = 0x3a1U;
-                                                                goto __Vlabel6;
-                                                            }
-                                                        } else if (
-                                                                   (8U 
-                                                                    == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) {
-                                                            __Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout = 0U;
-                                                            goto __Vlabel6;
-                                                        }
-                                                        __Vlabel6: ;
-                                                    }
-                                                }(), (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout))))))), 4U)));
-            vlSelf->fp8_softmax__DOT__one_pos_s10 = vlSelf->fp8_softmax__DOT__one_pos_s9;
+                                __Vlabel4: ;
+                            }
+                        }(), (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__6__Vfuncout))) 
+                 + VL_SHIFTR_III(32,32,32, ((IData)(vlSelf->fp8_softmax__DOT__w_s9) 
+                                            * (VL_EXTEND_II(32,11, 
+                                                            ([&]() {
+                                        __Vfunc_fp8_softmax__DOT__log2_lut__7__addr 
+                                            = (0xfU 
+                                               & ((IData)(1U) 
+                                                  + 
+                                                  VL_EXTENDS_II(4,4, (IData)(vlSelf->fp8_softmax__DOT__idx_s9))));
+                                        {
+                                            if ((((
+                                                   (((((0U 
+                                                        == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr)) 
+                                                       | (1U 
+                                                          == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) 
+                                                      | (2U 
+                                                         == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) 
+                                                     | (3U 
+                                                        == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) 
+                                                    | (4U 
+                                                       == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) 
+                                                   | (5U 
+                                                      == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) 
+                                                  | (6U 
+                                                     == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) 
+                                                 | (7U 
+                                                    == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr)))) {
+                                                if (
+                                                    (0U 
+                                                     == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) {
+                                                    __Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout = 0U;
+                                                    goto __Vlabel5;
+                                                } else if (
+                                                           (1U 
+                                                            == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) {
+                                                    __Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout = 0xaeU;
+                                                    goto __Vlabel5;
+                                                } else if (
+                                                           (2U 
+                                                            == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) {
+                                                    __Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout = 0x14aU;
+                                                    goto __Vlabel5;
+                                                } else if (
+                                                           (3U 
+                                                            == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) {
+                                                    __Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout = 0x1d6U;
+                                                    goto __Vlabel5;
+                                                } else if (
+                                                           (4U 
+                                                            == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) {
+                                                    __Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout = 0x257U;
+                                                    goto __Vlabel5;
+                                                } else if (
+                                                           (5U 
+                                                            == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) {
+                                                    __Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout = 0x2cdU;
+                                                    goto __Vlabel5;
+                                                } else if (
+                                                           (6U 
+                                                            == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) {
+                                                    __Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout = 0x33bU;
+                                                    goto __Vlabel5;
+                                                } else {
+                                                    __Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout = 0x3a1U;
+                                                    goto __Vlabel5;
+                                                }
+                                            } else if (
+                                                       (8U 
+                                                        == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__addr))) {
+                                                __Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout = 0x400U;
+                                                goto __Vlabel5;
+                                            }
+                                            __Vlabel5: ;
+                                        }
+                                    }(), (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__7__Vfuncout))) 
+                                               - VL_EXTEND_II(32,11, 
+                                                              ([&]() {
+                                        __Vfunc_fp8_softmax__DOT__log2_lut__8__addr 
+                                            = vlSelf->fp8_softmax__DOT__idx_s9;
+                                        {
+                                            if ((((
+                                                   (((((0U 
+                                                        == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr)) 
+                                                       | (1U 
+                                                          == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) 
+                                                      | (2U 
+                                                         == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) 
+                                                     | (3U 
+                                                        == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) 
+                                                    | (4U 
+                                                       == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) 
+                                                   | (5U 
+                                                      == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) 
+                                                  | (6U 
+                                                     == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) 
+                                                 | (7U 
+                                                    == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr)))) {
+                                                if (
+                                                    (0U 
+                                                     == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) {
+                                                    __Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout = 0U;
+                                                    goto __Vlabel6;
+                                                } else if (
+                                                           (1U 
+                                                            == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) {
+                                                    __Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout = 0xaeU;
+                                                    goto __Vlabel6;
+                                                } else if (
+                                                           (2U 
+                                                            == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) {
+                                                    __Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout = 0x14aU;
+                                                    goto __Vlabel6;
+                                                } else if (
+                                                           (3U 
+                                                            == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) {
+                                                    __Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout = 0x1d6U;
+                                                    goto __Vlabel6;
+                                                } else if (
+                                                           (4U 
+                                                            == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) {
+                                                    __Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout = 0x257U;
+                                                    goto __Vlabel6;
+                                                } else if (
+                                                           (5U 
+                                                            == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) {
+                                                    __Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout = 0x2cdU;
+                                                    goto __Vlabel6;
+                                                } else if (
+                                                           (6U 
+                                                            == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) {
+                                                    __Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout = 0x33bU;
+                                                    goto __Vlabel6;
+                                                } else {
+                                                    __Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout = 0x3a1U;
+                                                    goto __Vlabel6;
+                                                }
+                                            } else if (
+                                                       (8U 
+                                                        == (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__addr))) {
+                                                __Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout = 0x400U;
+                                                goto __Vlabel6;
+                                            }
+                                            __Vlabel6: ;
+                                        }
+                                    }(), (IData)(__Vfunc_fp8_softmax__DOT__log2_lut__8__Vfuncout))))), 4U));
+            vlSelf->fp8_softmax__DOT__one_pos_s10 = 
+                VL_EXTENDS_II(32,16, (IData)(vlSelf->fp8_softmax__DOT__one_pos_s9));
             vlSelf->fp8_softmax__DOT__updated_max_s10 
-                = vlSelf->fp8_softmax__DOT__updated_max_s9;
+                = VL_EXTENDS_II(32,16, (IData)(vlSelf->fp8_softmax__DOT__updated_max_s9));
             __Vdlyvval__fp8_softmax__DOT__stored_values_s10__v0 
                 = vlSelf->fp8_softmax__DOT__stored_values_s9
                 [0U];
@@ -1826,70 +1818,86 @@ VL_INLINE_OPT void Vtop___024root___nba_sequent__TOP__0(Vtop___024root* vlSelf) 
         vlSelf->fp8_softmax__DOT__stored_values_s10[0xeU] = 0U;
         vlSelf->fp8_softmax__DOT__stored_values_s10[0xfU] = 0U;
     }
-    vlSelf->fp8_softmax__DOT__log_result = (0xffffU 
-                                            & ((IData)(vlSelf->fp8_softmax__DOT__one_pos_s10) 
-                                               + (IData)(vlSelf->fp8_softmax__DOT__result_s10)));
+    vlSelf->fp8_softmax__DOT__frac_q7 = (0xffffU & 
+                                         VL_EXTENDS_II(16,8, 
+                                                       (0x7fU 
+                                                        & (vlSelf->fp8_softmax__DOT__result_s10 
+                                                           >> 3U))));
     vlSelf->fp8_softmax__DOT__log_and_max = (0xffffU 
-                                             & ((IData)(vlSelf->fp8_softmax__DOT__log_result) 
-                                                + (IData)(vlSelf->fp8_softmax__DOT__max)));
+                                             & (VL_SHIFTL_III(16,16,32, 
+                                                              (vlSelf->fp8_softmax__DOT__one_pos_s10 
+                                                               - (IData)(0xaU)), 7U) 
+                                                + (
+                                                   VL_EXTENDS_II(16,16, (IData)(vlSelf->fp8_softmax__DOT__frac_q7)) 
+                                                   + vlSelf->fp8_softmax__DOT__updated_max_s10)));
     if (vlSelf->rst_n) {
         if (vlSelf->fp8_softmax__DOT__s8_valid) {
             vlSelf->fp8_softmax__DOT__valid_s9 = vlSelf->fp8_softmax__DOT__s8_valid;
+            vlSelf->fp8_softmax__DOT__idx_s9 = vlSelf->fp8_softmax__DOT__idx;
+            vlSelf->fp8_softmax__DOT__w_s9 = vlSelf->fp8_softmax__DOT__w;
             vlSelf->fp8_softmax__DOT__one_pos_s9 = vlSelf->fp8_softmax__DOT__one_pos;
         }
     } else {
         vlSelf->fp8_softmax__DOT__valid_s9 = 0U;
+        vlSelf->fp8_softmax__DOT__idx_s9 = 0U;
+        vlSelf->fp8_softmax__DOT__w_s9 = 0U;
         vlSelf->fp8_softmax__DOT__one_pos_s9 = 0U;
     }
     vlSelf->fp8_softmax__DOT__one_pos = 0U;
     vlSelf->fp8_softmax__DOT__idx = 0U;
     vlSelf->fp8_softmax__DOT__w = 0U;
-    if ((0x8000U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 0xfU;
-    }
-    if ((0x4000U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 0xeU;
-    }
-    if ((0x2000U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 0xdU;
-    }
-    if ((0x1000U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 0xcU;
-    }
-    if ((0x800U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 0xbU;
-    }
-    if ((0x400U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 0xaU;
-    }
-    if ((0x200U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 9U;
-    }
-    if ((0x100U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 8U;
-    }
-    if ((0x80U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 7U;
-    }
-    if ((0x40U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 6U;
-    }
-    if ((0x20U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 5U;
-    }
-    if ((0x10U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 4U;
-    }
-    if ((8U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 3U;
-    }
-    if ((4U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
-        vlSelf->fp8_softmax__DOT__one_pos = 2U;
+    if ((1U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 0U;
     }
     if ((2U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
         vlSelf->fp8_softmax__DOT__one_pos = 1U;
     }
-    vlSelf->fp8_softmax__DOT__f_frac = (0xffffU & VL_SHIFTRS_III(16,16,16, (IData)(vlSelf->fp8_softmax__DOT__s8_sum), (IData)(vlSelf->fp8_softmax__DOT__one_pos)));
+    if ((4U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 2U;
+    }
+    if ((8U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 3U;
+    }
+    if ((0x10U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 4U;
+    }
+    if ((0x20U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 5U;
+    }
+    if ((0x40U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 6U;
+    }
+    if ((0x80U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 7U;
+    }
+    if ((0x100U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 8U;
+    }
+    if ((0x200U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 9U;
+    }
+    if ((0x400U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 0xaU;
+    }
+    if ((0x800U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 0xbU;
+    }
+    if ((0x1000U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 0xcU;
+    }
+    if ((0x2000U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 0xdU;
+    }
+    if ((0x4000U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 0xeU;
+    }
+    if ((0x8000U & (IData)(vlSelf->fp8_softmax__DOT__s8_sum))) {
+        vlSelf->fp8_softmax__DOT__one_pos = 0xfU;
+    }
+    vlSelf->fp8_softmax__DOT__f_frac = (0xffffU & VL_SHIFTR_III(24,24,16, 
+                                                                (0xffffffU 
+                                                                 & VL_SHIFTL_III(24,24,32, 
+                                                                                VL_EXTENDS_II(24,16, (IData)(vlSelf->fp8_softmax__DOT__s8_sum)), 7U)), (IData)(vlSelf->fp8_softmax__DOT__one_pos)));
     vlSelf->fp8_softmax__DOT__idx = (7U & ((IData)(vlSelf->fp8_softmax__DOT__f_frac) 
                                            >> 4U));
     vlSelf->fp8_softmax__DOT__w = (0xfU & (IData)(vlSelf->fp8_softmax__DOT__f_frac));

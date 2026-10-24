@@ -83,6 +83,7 @@ Vtop__Syms::Vtop__Syms(VerilatedContext* contextp, const char* namep, Vtop* mode
         __Vscope_fp8_softmax.varInsert(__Vfinal,"f", &(TOP.fp8_softmax__DOT__f), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"f_frac", &(TOP.fp8_softmax__DOT__f_frac), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"first", &(TOP.fp8_softmax__DOT__first), false, VLVT_UINT8,VLVD_NODIR|VLVF_PUB_RW,0);
+        __Vscope_fp8_softmax.varInsert(__Vfinal,"frac_q7", &(TOP.fp8_softmax__DOT__frac_q7), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"fsm_start", &(TOP.fp8_softmax__DOT__fsm_start), false, VLVT_UINT8,VLVD_NODIR|VLVF_PUB_RW,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"idx", &(TOP.fp8_softmax__DOT__idx), false, VLVT_UINT8,VLVD_NODIR|VLVF_PUB_RW,1 ,3,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"idx_s4", &(TOP.fp8_softmax__DOT__idx_s4), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1, 15,0);
@@ -115,14 +116,14 @@ Vtop__Syms::Vtop__Syms(VerilatedContext* contextp, const char* namep, Vtop* mode
         __Vscope_fp8_softmax.varInsert(__Vfinal,"old_max_s4", &(TOP.fp8_softmax__DOT__old_max_s4), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"old_max_s4_p", &(TOP.fp8_softmax__DOT__old_max_s4_p), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"one_pos", &(TOP.fp8_softmax__DOT__one_pos), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);
-        __Vscope_fp8_softmax.varInsert(__Vfinal,"one_pos_s10", &(TOP.fp8_softmax__DOT__one_pos_s10), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);
+        __Vscope_fp8_softmax.varInsert(__Vfinal,"one_pos_s10", &(TOP.fp8_softmax__DOT__one_pos_s10), false, VLVT_UINT32,VLVD_NODIR|VLVF_PUB_RW,1 ,31,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"one_pos_s9", &(TOP.fp8_softmax__DOT__one_pos_s9), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"out", &(TOP.fp8_softmax__DOT__out), false, VLVT_WDATA,VLVD_NODIR|VLVF_PUB_RW,1, 255,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"out_valid", &(TOP.fp8_softmax__DOT__out_valid), false, VLVT_UINT8,VLVD_NODIR|VLVF_PUB_RW,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"prelog_sum", &(TOP.fp8_softmax__DOT__prelog_sum), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"product", &(TOP.fp8_softmax__DOT__product), false, VLVT_UINT32,VLVD_NODIR|VLVF_PUB_RW,1 ,31,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"rescale_factor_s7", &(TOP.fp8_softmax__DOT__rescale_factor_s7), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);
-        __Vscope_fp8_softmax.varInsert(__Vfinal,"result_s10", &(TOP.fp8_softmax__DOT__result_s10), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);
+        __Vscope_fp8_softmax.varInsert(__Vfinal,"result_s10", &(TOP.fp8_softmax__DOT__result_s10), false, VLVT_UINT32,VLVD_NODIR|VLVF_PUB_RW,1 ,31,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"result_s5", &(TOP.fp8_softmax__DOT__result_s5), false, VLVT_UINT64,VLVD_NODIR|VLVF_PUB_RW,1, 63,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"results_s5", &(TOP.fp8_softmax__DOT__results_s5), false, VLVT_UINT64,VLVD_NODIR|VLVF_PUB_RW,1, 63,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"row_done", &(TOP.fp8_softmax__DOT__row_done), false, VLVT_UINT8,VLVD_NODIR|VLVF_PUB_RW,0);
@@ -169,7 +170,7 @@ Vtop__Syms::Vtop__Syms(VerilatedContext* contextp, const char* namep, Vtop* mode
         __Vscope_fp8_softmax.varInsert(__Vfinal,"sum_s7", &(TOP.fp8_softmax__DOT__sum_s7), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"sum_s7_pre", &(TOP.fp8_softmax__DOT__sum_s7_pre), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"updated_max", &(TOP.fp8_softmax__DOT__updated_max), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);
-        __Vscope_fp8_softmax.varInsert(__Vfinal,"updated_max_s10", &(TOP.fp8_softmax__DOT__updated_max_s10), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);
+        __Vscope_fp8_softmax.varInsert(__Vfinal,"updated_max_s10", &(TOP.fp8_softmax__DOT__updated_max_s10), false, VLVT_UINT32,VLVD_NODIR|VLVF_PUB_RW,1 ,31,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"updated_max_s2", &(TOP.fp8_softmax__DOT__updated_max_s2), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"updated_max_s3", &(TOP.fp8_softmax__DOT__updated_max_s3), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);
         __Vscope_fp8_softmax.varInsert(__Vfinal,"updated_max_s4", &(TOP.fp8_softmax__DOT__updated_max_s4), false, VLVT_UINT16,VLVD_NODIR|VLVF_PUB_RW,1 ,15,0);

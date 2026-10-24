@@ -149,9 +149,6 @@ class alignas(VL_CACHE_LINE_BYTES) Vtop___024root final : public VerilatedModule
     };
     struct {
         SData/*15:0*/ fp8_softmax__DOT__updated_max_s9;
-        SData/*15:0*/ fp8_softmax__DOT__result_s10;
-        SData/*15:0*/ fp8_softmax__DOT__one_pos_s10;
-        SData/*15:0*/ fp8_softmax__DOT__updated_max_s10;
         SData/*15:0*/ fp8_softmax__DOT__log_result;
         SData/*15:0*/ fp8_softmax__DOT__log_and_max;
         SData/*15:0*/ fp8_softmax__DOT__sub_s7;
@@ -161,10 +158,14 @@ class alignas(VL_CACHE_LINE_BYTES) Vtop___024root final : public VerilatedModule
         SData/*15:0*/ fp8_softmax__DOT__chunk_max;
         SData/*15:0*/ fp8_softmax__DOT__chunk_max_intermediate_1;
         SData/*15:0*/ fp8_softmax__DOT__chunk_max_intermediate_2;
+        SData/*15:0*/ fp8_softmax__DOT__frac_q7;
         SData/*10:0*/ __Vfunc_fp8_softmax__DOT__exp2_lut__3__Vfuncout;
         SData/*10:0*/ __Vfunc_fp8_softmax__DOT__exp2_lut__4__Vfuncout;
         SData/*10:0*/ __Vfunc_fp8_softmax__DOT__exp2_lut__5__Vfuncout;
         IData/*31:0*/ fp8_softmax__DOT__shifted_value_s7;
+        IData/*31:0*/ fp8_softmax__DOT__result_s10;
+        IData/*31:0*/ fp8_softmax__DOT__one_pos_s10;
+        IData/*31:0*/ fp8_softmax__DOT__updated_max_s10;
         IData/*31:0*/ fp8_softmax__DOT__product;
         IData/*20:0*/ fp8_softmax__DOT__int_sum_s7;
         IData/*31:0*/ fp8_softmax__DOT__unnamedblk2__DOT__i;
