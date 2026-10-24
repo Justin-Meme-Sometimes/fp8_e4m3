@@ -229,11 +229,7 @@ module fp8_softmax
                 ins_s4[i] <= 0;
             end
         end else begin
-            if(in_first) begin
-                //pasthrough
-            end else begin
-              
-                    for(int i = 0; i < 4; i++) begin
+                for(int i = 0; i < 4; i++) begin
                         idx_s4[i] <= sub_result_s3[i][6:4];
                         w_s4[i]   <= sub_result_s3[i][3:0];
                         k_s4[i]   <= $signed(sub_result_s3[i][15:7]);
@@ -243,7 +239,6 @@ module fp8_softmax
                     updated_max_s4 <= updated_max_s3;
                     old_max_s4_p <= old_max_s3_p;
                 end
-            end
         end
     end
 
@@ -341,9 +336,9 @@ module fp8_softmax
                     end
                 end
                 s7_updated_max <= s6_updated_max; 
-                if(s7_curr_val_stored != 5'd16) s7_curr_val_stored <= s7_curr_val_stored + 5'd4;
+                if(in_valid && s7_curr_val_stored != 5'd16) s7_curr_val_stored <= s7_curr_val_stored + 5'd4;
             end
-            if(in_valid && s7_curr_val_stored == 5'd16) begin 
+            if(in_valid && s7_curr_val_stored == 5'd12) begin 
                 s7_valid <= 1;
             end else begin
                 s7_valid <= 0;
@@ -374,6 +369,8 @@ module fp8_softmax
                 s8_sum <= sum_s7;
                 s8_updated_max <= s7_updated_max;
                 s8_valid <= s7_valid;
+            end else begin
+                s8_valid <= 0;
             end
         end
     end

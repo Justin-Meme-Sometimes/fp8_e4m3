@@ -129,8 +129,8 @@ VL_ATTR_COLD void Vtop___024root___stl_sequent__TOP__0(Vtop___024root* vlSelf) {
     vlSelf->fp8_softmax__DOT__fsm__DOT__done_log_sum 
         = vlSelf->fp8_softmax__DOT__out_valid;
     vlSelf->out_valid = vlSelf->fp8_softmax__DOT__out_valid;
-    vlSelf->fp8_softmax__DOT__in_first = (0U == (IData)(vlSelf->fp8_softmax__DOT__s7_curr_val_stored));
     vlSelf->fp8_softmax__DOT__in_valid = vlSelf->fp8_softmax__DOT__valid_s6;
+    vlSelf->fp8_softmax__DOT__in_first = (0U == (IData)(vlSelf->fp8_softmax__DOT__s7_curr_val_stored));
     vlSelf->fp8_softmax__DOT__max_count_cnt = vlSelf->fp8_softmax__DOT__max_count_fsm__DOT__out;
     vlSelf->fp8_softmax__DOT__first = vlSelf->fp8_softmax__DOT__fsm__DOT__first;
     vlSelf->fp8_softmax__DOT__compute_state = vlSelf->compute_state;
