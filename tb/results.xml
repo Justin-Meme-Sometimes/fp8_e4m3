@@ -1,6 +1,0 @@
-<testsuites name="results">
-  <testsuite name="all" package="all">
-    <property name="random_seed" value="1792805858" />
-    <testcase name="softmax_stage_by_stage" classname="test_softmax_stages" file="/home/juiceboy/fp8_e4m3/tb/test_softmax_stages.py" lineno="263" time="0.2560567855834961" sim_time_ns="39625.001" ratio_time="154750.83352977148" />
-  </testsuite>
-</testsuites>

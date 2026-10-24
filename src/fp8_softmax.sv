@@ -92,6 +92,7 @@ module fp8_softmax
     logic signed [20:0] int_sum_s7;
     logic [3:0] s7_idx;
     logic [3:0] s7_w;
+    logic done_computing, fsm_start, first, softmax_computing, softmax_clr;
 
     // full 16-entry result buffer; `out` port is only 4 lanes (see note)
     logic signed [15:0] softmax_out [0:15];
@@ -112,20 +113,34 @@ module fp8_softmax
         endcase
     endfunction
 
-    function automatic logic [10:0] exp2_lut(
+    function automatic logic [12:0] exp2_lut(
         input logic [3:0] addr
     );
         case (addr)
-            4'd0: return 11'h400;  // f=1.000  log2=0.000000
-            4'd1: return 11'h45D;  // f=1.125  log2=0.169925
-            4'd2: return 11'h4C2;  // f=1.250  log2=0.321928
-            4'd3: return 11'h530;  // f=1.375  log2=0.459432
-            4'd4: return 11'h5A8;  // f=1.500  log2=0.584963
-            4'd5: return 11'h62B;  // f=1.625  log2=0.700440
-            4'd6: return 11'h6BA;  // f=1.750  log2=0.807355
-            4'd7: return 11'h756;  // f=1.875  log2=0.906891
-            4'd8: return 11'h800;  // f=2.000  log2=1.000000
+            4'd0: return 13'h400;  // f=1.000  log2=0.000000
+            4'd1: return 13'h45D;  // f=1.125  log2=0.169925
+            4'd2: return 13'h4C2;  // f=1.250  log2=0.321928
+            4'd3: return 13'h530;  // f=1.375  log2=0.459432
+            4'd4: return 13'h5A8;  // f=1.500  log2=0.584963
+            4'd5: return 13'h62B;  // f=1.625  log2=0.700440
+            4'd6: return 13'h6BA;  // f=1.750  log2=0.807355
+            4'd7: return 13'h756;  // f=1.875  log2=0.906891
+            4'd8: return 13'h800;  // f=2.000  log2=1.000000
         endcase
+    endfunction
+
+    function automatic logic [15:0] clamp (
+        input logic signed [17:0] x
+    );
+        if(x > 17'sd32767) begin
+            return 16'sd32767;
+        end
+        else if(x < 16'sh8000) begin
+            return 16'sh8000;
+        end
+        else begin
+            return x[15:0];
+        end
     endfunction
 
     logic [3:0] max_cnt;
@@ -138,7 +153,7 @@ module fp8_softmax
     soft_counter max_count_fsm (.clk(clk), .rst_n(rst_n), .en(s6_inc_max_cnt), .clr(softmax_clr), .out(max_count_cnt));
 
 
-    logic done_computing, fsm_start, first, softmax_computing, softmax_clr;
+
     
     //fsm starts once the softmax row is not full and we are in the compute_state with a valid input
 
@@ -208,7 +223,7 @@ module fp8_softmax
         end else begin
           
                 for(int i = 0; i < 4; i++) begin
-                    sub_result_s3[i] <= ins_s2[i] - updated_max_s2;
+                    sub_result_s3[i] <= clamp(18'(ins_s2[i]) - 18'(updated_max_s2));
                     ins_s3[i] <= ins_s2[i];
                 end
             
@@ -376,11 +391,6 @@ module fp8_softmax
         end
     end
    
-//    always_ff @(posedge clk) begin
-//     if (s7_valid)
-//         $display("[%0t] s8_sum_in=%0d one_pos=%0d", $time, sum_s7, one_pos);
-//     end
-
     always_comb begin
         one_pos = 0;
         f = 0;
@@ -441,7 +451,7 @@ module fp8_softmax
     //we subtract by 10 to get the real exponenet from the fixed point format then we want to shift by 7 to get the correct fractional bits
     //we want to drop 3 bits go from 0.10 to 0.7
     //then add bad to max to get the log and max so we get the final max value we want from the log + max
-    assign log_and_max = $signed(((one_pos_s10 - 16'sd10) << 7)) + frac_q7 + updated_max_s10;
+    assign log_and_max = clamp(18'($signed(((one_pos_s10 - 16'sd10) << 7))) + 18'(frac_q7) + 18'(updated_max_s10));
 
 
     always_ff @(posedge clk, negedge rst_n) begin
@@ -449,7 +459,7 @@ module fp8_softmax
             for(int j = 0; j < 16; j++) softmax_out[j] <= 0;
         end else begin
             if(valid_s10) begin
-                for(int j = 0; j < 16; j++) softmax_out[j] <= stored_values_s10[j] - log_and_max;
+                for(int j = 0; j < 16; j++) softmax_out[j] <= clamp(18'(stored_values_s10[j]) - 18'(log_and_max));
             end
         end
     end

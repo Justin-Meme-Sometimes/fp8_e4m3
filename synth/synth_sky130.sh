@@ -7,6 +7,9 @@
 # Example:
 #   synth/synth_sky130.sh bfloat16_to_fp8_requant src/bfloat16_to_fp8_requant.sv
 #
+# Set FRONTEND=slang to parse with yosys-slang (full SystemVerilog, e.g. `return`
+# in functions, which the built-in frontend rejects).
+#
 # Writes synth/out/<top>.synth.v (gate-level netlist), synth/out/<top>.synth.json,
 # and synth/out/<top>.stat.txt (cell/area report) - all sky130_fd_sc_hd cells.
 
@@ -23,8 +26,15 @@ LIB="/foss/pdks/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v
 
 mkdir -p synth/out
 
+if [ "${FRONTEND:-}" = "slang" ]; then
+    READ_CMD="plugin -i slang
+read_slang --top ${TOP} ${SRCS[*]}"
+else
+    READ_CMD="read_verilog -sv ${SRCS[*]}"
+fi
+
 YOSYS_SCRIPT="
-read_verilog -sv ${SRCS[*]}
+${READ_CMD}
 hierarchy -top ${TOP} -check
 synth -top ${TOP}
 dfflibmap -liberty ${LIB}

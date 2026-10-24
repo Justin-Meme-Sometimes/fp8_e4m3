@@ -1,0 +1,14 @@
+# simulation / build output
+tb/sim_build*/
+tb/obj_dir*/
+tb/*.vcd
+tb/results.xml
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# synthesis output
+synth/out/
+
+# local environments
+.venv/

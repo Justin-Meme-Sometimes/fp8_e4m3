@@ -51,6 +51,11 @@ def wrap16(v: int) -> int:
     return v - (1 << 16) if v & 0x8000 else v
 
 
+def sat16(v: int) -> int:
+    """Saturate an integer to signed 16 bits."""
+    return max(-(1 << 15), min((1 << 15) - 1, v))
+
+
 def quantize(x: float) -> int:
     """Real -> Q8.7 signed int (saturating)."""
     return max(-(1 << 15), min((1 << 15) - 1, round(x * SCALE_IN)))
@@ -108,7 +113,7 @@ def trace_row(row_real: list[float]) -> RowTrace:
         old = m
         um = cmax if c == 0 else max(m, cmax)
 
-        sub = [wrap16(v - um) for v in ins]
+        sub = [sat16(v - um) for v in ins]
         k = [v >> Q_IN for v in sub]                # arithmetic shift == floor
         frac = [v & (SCALE_IN - 1) for v in sub]
         idx = [f >> W_BITS for f in frac]
@@ -135,7 +140,7 @@ def trace_row(row_real: list[float]) -> RowTrace:
 
     log2_sum = (tr.one_pos - Q_LUT) + tr.log_frac_q10 / (1 << Q_LUT)  # log2 of real sum
     tr.L = quantize(m / SCALE_IN + log2_sum)
-    tr.out = [wrap16(v - tr.L) for v in x]
+    tr.out = [sat16(v - tr.L) for v in x]
     return tr
 
 

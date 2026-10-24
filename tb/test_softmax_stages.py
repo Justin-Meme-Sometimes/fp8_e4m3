@@ -8,7 +8,10 @@ is `lat` register stages deep is visible in snapshot d + lat. If a stage fails
 at its nominal latency but matches within +/-SEARCH cycles, the report says so
 (a timing/alignment problem rather than a value problem).
 
-Env knobs: SOFTMAX_ROWS (limit #rows), SOFTMAX_RESET_EACH_ROW (default 1).
+Env knobs: SOFTMAX_ROWS (limit #rows), SOFTMAX_RESET_EACH_ROW (default 1),
+SOFTMAX_MAX_GAP (random idle cycles before each chunk, default 0),
+SOFTMAX_GAP_COMPUTE_STATE (compute_state held high in gaps, default 1),
+SOFTMAX_OVERFLOW=1 (add rows whose x-max exceeds the 16-bit range).
 """
 
 import os
@@ -26,6 +29,10 @@ TIMEOUT_CYCLES = 200
 NUM_RANDOM_ROWS = 215
 RANDOM_RANGE = 6.0
 RESET_EACH_ROW = os.environ.get("SOFTMAX_RESET_EACH_ROW", "1") == "1"
+# up to this many idle cycles (valid=0) before each chunk; 0 = back-to-back chunks
+MAX_GAP = int(os.environ.get("SOFTMAX_MAX_GAP", "0"))
+# keep compute_state high during those idle cycles (set 0 to drop it with valid)
+GAP_COMPUTE_STATE = os.environ.get("SOFTMAX_GAP_COMPUTE_STATE", "1") == "1"
 
 DIRECTED_ROWS = [
     [0.0] * 16,
@@ -34,6 +41,30 @@ DIRECTED_ROWS = [
     [10.0] + [0.0] * 15,
     [-5.0] * 15 + [5.0],
 ]
+
+# masked-attention style rows: a few live scores, the rest at a large negative
+MASKED_ROWS = [
+    [3.0] + [-200.0] * 15,
+    [-200.0] * 15 + [3.0],
+    [1.0, 2.0, 3.0, 4.0] + [-200.0] * 12,
+    [-200.0] * 8 + [0.5] * 8,
+    [20.0] + [-100.0] * 15,
+    [0.0] * 4 + [-255.0] * 12,
+    [100.0] + [-100.0] * 15,
+]
+
+# x-max = -500 in Q8.7 exceeds the 16-bit range; the design saturates (golden sat16),
+# so the RTL must clamp x-max, L and out. Opt in with SOFTMAX_OVERFLOW=1.
+OVERFLOW_ROWS = [
+    [250.0] + [-250.0] * 15,
+    [-250.0] * 15 + [250.0],
+]
+
+# all-equal rows at the extremes of the Q8.7 range
+EXTREME_ROWS = [[v] * 16 for v in (255.0, -255.0, 100.0, -100.0, 0.01)]
+
+# wide-range random rows: (range, count)
+WIDE_RANGES = [(20.0, 20), (60.0, 20), (120.0, 20)]
 
 
 # --------------------------------------------------------------------------
@@ -154,6 +185,11 @@ async def run_row(dut, row_idx: int, trace: RowTrace) -> list[Result]:
 
     # drive 4 chunks, one per cycle, sampling before each drive
     for c in range(4):
+        for _ in range(random.randint(0, MAX_GAP) if MAX_GAP else 0):
+            log.append(await snapshot(dut))
+            dut.valid.value = 0
+            dut.compute_state.value = int(GAP_COMPUTE_STATE and c > 0)
+            await FallingEdge(dut.clk)
         log.append(await snapshot(dut))
         drive_idx.append(len(log) - 1)
         dut.compute_state.value = 1
@@ -238,6 +274,47 @@ def s9_expected_from_hw_sum(st, trace, log, default):
     }.get(st.signal, default)
 
 
+def accuracy_report(rows_x: list[list[int]], outs: dict[int, list[int]], labels: list[str]) -> str:
+    """Compare the RTL's log2-softmax output against exact float64 softmax (base 2).
+
+    Reference: p_i = 2^(x_i/128) / sum_j 2^(x_j/128) on the same quantized inputs.
+    RTL:       p_i = 2^(out_i/128).
+    accuracy = 100 * (1 - TV), TV = 0.5 * sum|p_rtl - p_ref| (probability mass in the wrong place).
+    """
+    import math
+
+    cats: dict[str, list[tuple[float, float, float, bool, float]]] = {}
+    for ri, x in enumerate(rows_x):
+        if ri not in outs:
+            continue
+        xs = [v / SCALE_IN for v in x]
+        m = max(xs)
+        e = [2.0 ** (v - m) for v in xs]
+        tot = sum(e)
+        p_ref = [v / tot for v in e]
+        p_hw = [2.0 ** (o / SCALE_IN) for o in outs[ri]]
+        tv = 0.5 * sum(abs(a - b) for a, b in zip(p_hw, p_ref))
+        max_abs = max(abs(a - b) for a, b in zip(p_hw, p_ref))
+        # log-domain error in Q8.7 LSBs, ignoring entries where the reference underflows Q8.7
+        lerr = max(
+            (abs(o - (math.log2(pr) * SCALE_IN)) for o, pr in zip(outs[ri], p_ref) if pr > 2.0 ** -200),
+            default=0.0,
+        )
+        argmax_ok = max(range(16), key=lambda i: p_hw[i]) in [i for i, v in enumerate(p_ref) if v == max(p_ref)]
+        cats.setdefault(labels[ri], []).append((tv, max_abs, lerr, argmax_ok, sum(p_hw)))
+        cats.setdefault("ALL", []).append((tv, max_abs, lerr, argmax_ok, sum(p_hw)))
+    lines = [f"\n{'rows':<14}{'n':>5}{'accuracy%':>11}{'worst row%':>12}{'max |dp|':>11}{'max log err':>13}{'argmax ok%':>12}{'mean sum(p)':>13}"]
+    for name in [k for k in cats if k != "ALL"] + ["ALL"]:
+        v = cats[name]
+        acc = 100 * (1 - sum(t[0] for t in v) / len(v))
+        worst = 100 * (1 - max(t[0] for t in v))
+        lines.append(
+            f"{name:<14}{len(v):>5}{acc:>11.4f}{worst:>12.3f}{max(t[1] for t in v):>11.5f}"
+            f"{max(t[2] for t in v):>10.1f} LSB{100 * sum(t[3] for t in v) / len(v):>11.1f}{sum(t[4] for t in v) / len(v):>13.4f}"
+        )
+    return "\n".join(lines)
+
+
 def fmt(v):
     return "-" if v is None else str(v)
 
@@ -268,8 +345,20 @@ async def softmax_stage_by_stage(dut):
     rows = list(DIRECTED_ROWS) + [
         [random.uniform(-RANDOM_RANGE, RANDOM_RANGE) for _ in range(16)] for _ in range(NUM_RANDOM_ROWS)
     ]
+    n_dir, n_rand = len(DIRECTED_ROWS), NUM_RANDOM_ROWS
+    labels = ["directed"] * n_dir + [f"rand +-{RANDOM_RANGE:g}"] * n_rand
+    rows += MASKED_ROWS + EXTREME_ROWS
+    labels += ["masked"] * len(MASKED_ROWS) + ["all-equal"] * len(EXTREME_ROWS)
+    if os.environ.get("SOFTMAX_OVERFLOW") == "1":
+        rows += OVERFLOW_ROWS
+        labels += ["overflow"] * len(OVERFLOW_ROWS)
+    for rng, count in WIDE_RANGES:
+        rows += [[random.uniform(-rng, rng) for _ in range(16)] for _ in range(count)]
+        labels += [f"rand +-{rng:g}"] * count
     limit = int(os.environ.get("SOFTMAX_ROWS", len(rows)))
     rows = rows[:limit]
+    labels = labels[:limit]
+    rows_x: list[list[int]] = []
 
     await reset(dut)
 
@@ -279,6 +368,7 @@ async def softmax_stage_by_stage(dut):
         if RESET_EACH_ROW and ri:
             await reset(dut)
         trace = trace_row(row)
+        rows_x.append(trace.x)
         res = await run_row(dut, ri, trace)
         all_results += res
         report_first_divergence(ri, res, printed)
@@ -303,5 +393,8 @@ async def softmax_stage_by_stage(dut):
     lines.append(f"\nrows: {len(rows)}   failing checks: {total_fail}")
     lines.append(f"earliest failing stage in pipeline order: {first_bad.name if first_bad else 'none'}")
     dut._log.info("\n".join(lines))
+
+    outs = {r.row: r.got for r in all_results if r.stage.signal == "out" and r.got and None not in r.got}
+    dut._log.info("RTL vs exact float64 softmax (base 2)" + accuracy_report(rows_x, outs, labels))
 
     assert total_fail == 0, f"{total_fail} stage checks failed; earliest failing stage: {first_bad.name}"
