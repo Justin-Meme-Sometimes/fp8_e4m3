@@ -453,7 +453,6 @@ module fp8_softmax
     //then add bad to max to get the log and max so we get the final max value we want from the log + max
     assign log_and_max = clamp(18'($signed(((one_pos_s10 - 16'sd10) << 7))) + 18'(frac_q7) + 18'(updated_max_s10));
 
-
     always_ff @(posedge clk, negedge rst_n) begin
         if(!rst_n) begin
             for(int j = 0; j < 16; j++) softmax_out[j] <= 0;
@@ -469,16 +468,79 @@ module fp8_softmax
             out_valid <= 0;
         end else begin
             if(valid_s10) begin
-                out_valid <= 1;
+                valid_s11 <= 1;
             end else begin
-                out_valid <= 0;
+                valid_s11 <= 0;
+            end
+        end
+    end
+
+    always_ff @(posedge clk, negedge rst_n) begin
+        if(!rst_n) begin
+            for(int i = 0; i < 16; i++) begin
+                k_s11[i] <= 0;
+                idx_s11[i] <= 0;
+                w_idx[i] <= 0;
+            end
+            valid_s12 <= 0;
+        end else begin
+            if(out_valid) begin
+                for(int i = 0; i < 16; i++)  begin
+                    k_s11[i] <= softmax_out[15:7];
+                    idx_s11[i] <= softmax_out[6:4];
+                    w_s11[i] <= softmax_out[3:0];
+                end
+            end
+            valid_s11 <= valid_s12;
+        end
+    end
+
+    always_ff @(posedge clk, negedge rst_n) begin
+        if(!rst_n) begin
+            for(int i = 0; i < 16; i++) begin
+               res_s12[i] <= 0; 
+               k_s12[i];
+            end
+        end else begin
+            if(valid_s12) begin
+                for(int i = 0; i < 16; i++) begin
+                    k_s12[i] <= k_s11[i];
+                    res_s12[i] = exp2_lut(idx_s11[i]) + ((w_s11[i] * $signed((exp2_lut(idx_s11[i]+1)) - $signed(exp2_lut(idx_s11[i])))) >> W_BITS);
+                end
+            end
+            valid_s13 <= valid_s12;
+        end
+    end
+
+    always_comb begin
+        for(int i = 0; i < 16; i++) begin
+            mant_s13_pre = res_s12[i][9:3];
+            exp_s13_pre = k_s12[i] + 8'sd127;
+            if(exp_s13_pre <= 0) begin
+                final_out_pre[i] = 0;
+            end else begin
+                final_out_pre[i] = {1'b0, exp_s13_pre , mant_s13_pre};
+            end
+        end
+    end
+
+    always_ff @(posedge clk, negedge rst_n) begin
+        if(!rst_n) begin
+            for(int i = 0; i < 16; i++) begin
+                final_out[i] <= 0;
+            end
+        end else begin
+            if(valid_s13) begin
+                for(int i = 0; i < 16; i++) begin
+                    final_out[i] <= final_out_pre[i];
+                end
             end
         end
     end
 
     always_comb begin
         for(int i = 0; i < 16; i++) begin
-            out[i] =  softmax_out[i];
+            out[i] = softmax_out[i];
         end
     end
 
