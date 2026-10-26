@@ -97,6 +97,18 @@ module fp8_softmax
     // full 16-entry result buffer; `out` port is only 4 lanes (see note)
     logic signed [15:0] softmax_out [0:15];
 
+    // S11-S13: convert log2-softmax (Q8.7) back to bf16 probabilities
+    logic valid_s11, valid_s12, valid_s13;
+    logic signed [8:0]  k_s11 [0:15];       // integer part of out, floor
+    logic        [3:0]  idx_s11 [0:15];     // LUT index (4 bits so idx+1 can't wrap)
+    logic        [3:0]  w_s11 [0:15];       // interpolation weight
+    logic signed [8:0]  k_s12 [0:15];
+    logic signed [15:0] res_s12 [0:15];     // 2^frac, Q1.10
+    logic        [6:0]  mant_s13_pre;       // per-lane temporaries inside the comb loop
+    logic signed [8:0]  exp_s13_pre;
+    logic        [15:0] final_out_pre [0:15];
+    logic        [15:0] final_out [0:15];   // bf16 probabilities, one per element
+
         function automatic logic [10:0] log2_lut(
         input logic [3:0] addr
     );
@@ -465,7 +477,7 @@ module fp8_softmax
 
     always_ff @(posedge clk, negedge rst_n) begin
         if(!rst_n) begin
-            out_valid <= 0;
+            valid_s11 <= 0;
         end else begin
             if(valid_s10) begin
                 valid_s11 <= 1;
@@ -480,18 +492,18 @@ module fp8_softmax
             for(int i = 0; i < 16; i++) begin
                 k_s11[i] <= 0;
                 idx_s11[i] <= 0;
-                w_idx[i] <= 0;
+                w_s11[i] <= 0;
             end
             valid_s12 <= 0;
         end else begin
-            if(out_valid) begin
+            if(valid_s11) begin
                 for(int i = 0; i < 16; i++)  begin
-                    k_s11[i] <= softmax_out[15:7];
-                    idx_s11[i] <= softmax_out[6:4];
-                    w_s11[i] <= softmax_out[3:0];
+                    k_s11[i] <= softmax_out[i][15:7];
+                    idx_s11[i] <= softmax_out[i][6:4];
+                    w_s11[i] <= softmax_out[i][3:0];
                 end
             end
-            valid_s11 <= valid_s12;
+            valid_s12 <= valid_s11;
         end
     end
 
@@ -499,13 +511,14 @@ module fp8_softmax
         if(!rst_n) begin
             for(int i = 0; i < 16; i++) begin
                res_s12[i] <= 0; 
-               k_s12[i];
+               k_s12[i] <= 0;
             end
+            valid_s13 <= 0;
         end else begin
             if(valid_s12) begin
                 for(int i = 0; i < 16; i++) begin
                     k_s12[i] <= k_s11[i];
-                    res_s12[i] = exp2_lut(idx_s11[i]) + ((w_s11[i] * $signed((exp2_lut(idx_s11[i]+1)) - $signed(exp2_lut(idx_s11[i])))) >> W_BITS);
+                    res_s12[i] <= exp2_lut(idx_s11[i]) + ((w_s11[i] * $signed((exp2_lut(idx_s11[i]+1)) - $signed(exp2_lut(idx_s11[i])))) >> W_BITS);
                 end
             end
             valid_s13 <= valid_s12;
@@ -519,7 +532,7 @@ module fp8_softmax
             if(exp_s13_pre <= 0) begin
                 final_out_pre[i] = 0;
             end else begin
-                final_out_pre[i] = {1'b0, exp_s13_pre , mant_s13_pre};
+                final_out_pre[i] = {1'b0, exp_s13_pre[7:0], mant_s13_pre};
             end
         end
     end
@@ -529,18 +542,20 @@ module fp8_softmax
             for(int i = 0; i < 16; i++) begin
                 final_out[i] <= 0;
             end
+            out_valid <= 0;
         end else begin
             if(valid_s13) begin
                 for(int i = 0; i < 16; i++) begin
                     final_out[i] <= final_out_pre[i];
                 end
             end
+            out_valid <= valid_s13;
         end
     end
 
     always_comb begin
         for(int i = 0; i < 16; i++) begin
-            out[i] = softmax_out[i];
+            out[i] = final_out[i];
         end
     end
 

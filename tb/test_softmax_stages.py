@@ -22,7 +22,7 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import FallingEdge
 
-from softmax_golden_stages import Q_IN, SCALE_IN, W_BITS, RowTrace, log2_frac_q10, trace_row, wrap16
+from softmax_golden_stages import Q_IN, SCALE_IN, W_BITS, RowTrace, bf16_to_float, exp2_to_bf16, log2_frac_q10, trace_row, wrap16
 
 SEARCH = 3
 TIMEOUT_CYCLES = 200
@@ -107,7 +107,8 @@ STAGES = [
     Stage("S9 log w", "w_s9", 1, 4, False, "row", 1, lambda t, c: [t.log_w], valid="valid_s9"),
     Stage("S10 log2 frac Q0.10", "result_s10", 1, 16, False, "row", 3, lambda t, c: [t.log_frac_q10], valid="valid_s10"),
     Stage("S10 L=max+log2 Q8.7", "log_and_max", 1, 16, True, "row", 4, lambda t, c: [t.L], valid="valid_s10"),
-    Stage("OUT x-L Q8.7", "out", 16, 16, True, "row", 4, lambda t, c: t.out, valid="out_valid"),
+    Stage("OUT x-L Q8.7", "softmax_out", 16, 16, True, "row", 4, lambda t, c: t.out, valid="valid_s11"),
+    Stage("FINAL 2^out bf16", "final_out", 16, 16, False, "row", 0, lambda t, c: t.bf16, valid="out_valid"),
 ]
 WATCH = sorted({s.signal for s in STAGES} | {s.valid for s in STAGES if s.valid})
 
@@ -135,7 +136,11 @@ def lane_bits_for(stage: Stage) -> int:
 async def snapshot(dut) -> dict:
     snap = {}
     for name in WATCH:
-        snap[name] = int(getattr(dut, name).value)
+        h = getattr(dut, name)
+        try:
+            snap[name] = int(h.value)
+        except (TypeError, ValueError):   # unpacked array: pack lane i at bits [16i +: 16]
+            snap[name] = sum((int(h[i].value) & 0xFFFF) << (16 * i) for i in range(16))
     return snap
 
 
@@ -233,6 +238,8 @@ async def run_row(dut, row_idx: int, trace: RowTrace) -> list[Result]:
             exp = st.golden(trace, 0)
             if st.name.startswith(("S9", "S10 log2 frac")):
                 exp = s9_expected_from_hw_sum(st, trace, log, exp)
+            elif st.signal == "final_out":
+                exp = final_expected_from_hw_out(trace, log, exp)
             n = next((i for i, s in enumerate(log) if s[st.valid]), None)
             if n is None:
                 results.append(Result(row_idx, st, None, False, [None] * st.lanes, exp, f"{st.valid} never asserted"))
@@ -274,7 +281,7 @@ def s9_expected_from_hw_sum(st, trace, log, default):
     }.get(st.signal, default)
 
 
-def accuracy_report(rows_x: list[list[int]], outs: dict[int, list[int]], labels: list[str]) -> str:
+def accuracy_report(rows_x: list[list[int]], outs: dict[int, list[int]], labels: list[str], bf16: bool = False) -> str:
     """Compare the RTL's log2-softmax output against exact float64 softmax (base 2).
 
     Reference: p_i = 2^(x_i/128) / sum_j 2^(x_j/128) on the same quantized inputs.
@@ -292,14 +299,20 @@ def accuracy_report(rows_x: list[list[int]], outs: dict[int, list[int]], labels:
         e = [2.0 ** (v - m) for v in xs]
         tot = sum(e)
         p_ref = [v / tot for v in e]
-        p_hw = [2.0 ** (o / SCALE_IN) for o in outs[ri]]
+        p_hw = [bf16_to_float(o) for o in outs[ri]] if bf16 else [2.0 ** (o / SCALE_IN) for o in outs[ri]]
         tv = 0.5 * sum(abs(a - b) for a, b in zip(p_hw, p_ref))
         max_abs = max(abs(a - b) for a, b in zip(p_hw, p_ref))
         # log-domain error in Q8.7 LSBs, ignoring entries where the reference underflows Q8.7
-        lerr = max(
-            (abs(o - (math.log2(pr) * SCALE_IN)) for o, pr in zip(outs[ri], p_ref) if pr > 2.0 ** -200),
-            default=0.0,
-        )
+        if bf16:   # log error between the converted probability and the exact one (skip flushed zeros)
+            lerr = max(
+                (abs(math.log2(ph) - math.log2(pr)) * SCALE_IN for ph, pr in zip(p_hw, p_ref) if ph > 0 and pr > 0),
+                default=0.0,
+            )
+        else:
+            lerr = max(
+                (abs(o - (math.log2(pr) * SCALE_IN)) for o, pr in zip(outs[ri], p_ref) if pr > 2.0 ** -200),
+                default=0.0,
+            )
         argmax_ok = max(range(16), key=lambda i: p_hw[i]) in [i for i, v in enumerate(p_ref) if v == max(p_ref)]
         cats.setdefault(labels[ri], []).append((tv, max_abs, lerr, argmax_ok, sum(p_hw)))
         cats.setdefault("ALL", []).append((tv, max_abs, lerr, argmax_ok, sum(p_hw)))
@@ -313,6 +326,17 @@ def accuracy_report(rows_x: list[list[int]], outs: dict[int, list[int]], labels:
             f"{max(t[2] for t in v):>10.1f} LSB{100 * sum(t[3] for t in v) / len(v):>11.1f}{sum(t[4] for t in v) / len(v):>13.4f}"
         )
     return "\n".join(lines)
+
+
+def final_expected_from_hw_out(trace, log, default):
+    """The bf16 stage converts the RTL's own softmax_out, which is only checked
+    against the golden within a few Q8.7 LSBs. Check the conversion bit-exactly
+    against that same RTL value, so the two checks don't double count."""
+    src = next(x for x in STAGES if x.signal == "softmax_out")
+    n = next((i for i, snap in enumerate(log) if snap[src.valid]), None)
+    if n is None:
+        return default
+    return [exp2_to_bf16(d) for d in read_stage(log[n], src)]
 
 
 def fmt(v):
@@ -394,7 +418,9 @@ async def softmax_stage_by_stage(dut):
     lines.append(f"earliest failing stage in pipeline order: {first_bad.name if first_bad else 'none'}")
     dut._log.info("\n".join(lines))
 
-    outs = {r.row: r.got for r in all_results if r.stage.signal == "out" and r.got and None not in r.got}
-    dut._log.info("RTL vs exact float64 softmax (base 2)" + accuracy_report(rows_x, outs, labels))
+    outs = {r.row: r.got for r in all_results if r.stage.signal == "softmax_out" and r.got and None not in r.got}
+    dut._log.info("log2-softmax (softmax_out) vs exact float64 softmax (base 2)" + accuracy_report(rows_x, outs, labels))
+    outs = {r.row: r.got for r in all_results if r.stage.signal == "final_out" and r.got and None not in r.got}
+    dut._log.info("bf16 probabilities (final_out) vs exact float64 softmax (base 2)" + accuracy_report(rows_x, outs, labels, bf16=True))
 
     assert total_fail == 0, f"{total_fail} stage checks failed; earliest failing stage: {first_bad.name}"

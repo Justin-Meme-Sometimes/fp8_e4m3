@@ -101,6 +101,25 @@ class RowTrace:
     log_frac_q10: int = 0      # S10: log2 mantissa interp, Q0.10
     L: int = 0                 # S10: max + log2(sum), Q8.7
     out: list[int] = field(default_factory=list)  # x - L, Q8.7
+    bf16: list[int] = field(default_factory=list)  # 2^out as bf16 bit patterns (flush-to-zero)
+
+
+def exp2_to_bf16(d: int) -> int:
+    """2^(d/128) as a bf16 bit pattern, mirroring the RTL: exponent k+127,
+    mantissa = bits [9:3] of the Q1.10 exp2 interpolation (truncated),
+    exponent <= 0 flushes to zero."""
+    k = d >> Q_IN                                   # floor
+    frac = d & (SCALE_IN - 1)
+    m = exp2_frac_q10(frac >> W_BITS, frac & ((1 << W_BITS) - 1))
+    e = k + 127
+    if e <= 0:
+        return 0
+    return (e << 7) | ((m >> 3) & 0x7F)
+
+
+def bf16_to_float(b: int) -> float:
+    e = (b >> 7) & 0xFF
+    return 0.0 if e == 0 else (1 + (b & 0x7F) / 128) * 2.0 ** (e - 127)
 
 
 def trace_row(row_real: list[float]) -> RowTrace:
@@ -143,6 +162,7 @@ def trace_row(row_real: list[float]) -> RowTrace:
     log2_sum = (tr.one_pos - Q_LUT) + tr.log_frac_q10 / (1 << Q_LUT)  # log2 of real sum
     tr.L = quantize(m / SCALE_IN + log2_sum)
     tr.out = [sat16(v - tr.L) for v in x]
+    tr.bf16 = [exp2_to_bf16(d) for d in tr.out]
     return tr
 
 
